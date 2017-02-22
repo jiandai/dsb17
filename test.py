@@ -29,16 +29,12 @@ import matplotlib.pyplot as plt
 # show individual slide
 def showSlide(patId, slideNum):
 	slices=[dicom.read_file(INPUT_FOLDER+patients[patId]+'/'+s) for s in os.listdir(INPUT_FOLDER+patients[patId])]
+	print(slices[slideNum])
 	plt.imshow(slices[slideNum].pixel_array)
 	plt.title('pat '+str(patId)+': slide'+str(slideNum) + ' (without normalization)')
 	plt.colorbar()
 	plt.show()
-	print(slices[slideNum])
 
-showSlide(9,11)
-showSlide(9,11)
-showSlide(14,51)
-quit()
 
 # show a whole scan
 def showScan(patId=0): #134
@@ -53,14 +49,17 @@ def showScan(patId=0): #134
 		fig.set_title(str(i))
 		plt.imshow(slices[i].pixel_array)
 	plt.show()
-
-
+'''
+showSlide(9,11)
+showSlide(9,11)
+showSlide(14,51)
+'''
 for pat in [3,5,9]: #range(len(patients)):
 	print(pat)
 	showScan(patId=pat) #134
 
 
-
+quit()
 
 
 # for len being 110
