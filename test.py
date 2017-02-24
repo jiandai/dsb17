@@ -1,5 +1,3 @@
-#%%
-# -*- coding: utf-8 -*-
 """
 version 20170116 by Jian:
 follow:
@@ -12,7 +10,8 @@ version 20170206 by Jian: revisit
 
 version 20170221 by Jian: more on visual 
 version 20170222 by Jian: batch process, metadata DB
-version 20170223 by Jian: metadata at patient level, slide level, and unhashable types
+version 20170223.1 by Jian: metadata at patient level, slide level, and unhashable types
+version 20170223.2 by Jian: refine unhashable extraction
 
 to-do normalization, packaging, OOing
 """
@@ -23,28 +22,14 @@ PWD='..'
 INPUT_FOLDER=PWD+'/sample_images/'
 import os
 patients = os.listdir(INPUT_FOLDER)
-print(patients)
 
 import dicom
 allScan=[[dicom.read_file(INPUT_FOLDER+pat+'/'+s) for s in os.listdir(INPUT_FOLDER+pat)] for pat in patients]
 
-
 #%%
+# handle single slide:
 fstfst = allScan[0][0]
-#%%
 scdfst = allScan[1][0]
-
-#%%
-print(fstfst.dir())
-#%%
-#%%
-#%%
-#%%
-#%%
-#%%
-#%%
-#%%
-
 
 #%%
 rec=dict()
@@ -63,16 +48,12 @@ for name in fstfst.dir():
     else:
         print(type(fstfst.PixelData))
 
+
+
+#%%
+# handle one patient or one scan
 #%%
 import pandas as pd
-#%%
-pd.DataFrame([{'a':1,'b':2}]).append(pd.DataFrame([{'a':4,'b':5}]))
-#%%
-pd.DataFrame([{'b':2}]).append(pd.DataFrame([{'a':'bb','b':5}]))
-#%%
-pd.DataFrame([{'a':'aa','b':2}]).append(pd.DataFrame([{'b':5}]))
-#%%
-pd.DataFrame([rec]).append(pd.DataFrame([rec])).shape
 #%%
 metaDB0 = pd.DataFrame()
 colDB0 = pd.DataFrame()
@@ -84,11 +65,9 @@ for sld in allScan[0]:
             colDB0 = colDB0.append(pd.DataFrame([{'col':name,'pos':sld.data_element(name).tag}]))
     metaDB0 = metaDB0.append(pd.DataFrame([red]))
 #%%
-metaDB0.shape
+
 #%%
-colDB0
-#%%
-colDB0.drop_duplicates().shape
+# handle all scans
 #%%
 bs = set(fstfst.dir())
 allCol=bs
@@ -107,131 +86,63 @@ for patScan in allScan:
                 colDB = colDB.append(pd.DataFrame([{'col':name,'pos':sld.data_element(name).tag}]))
         metaDB = metaDB.append(pd.DataFrame([rec]))
         if len(diff)>0:
-            print(sld.PatientID)
-            print(sld.InstanceNumber)
             allCol=allCol.union(s)
             #print(diff)
         #for it in sld.dir():
         #    print(it)
 #%%
-print(cnt)
-#%%
-metaDB.shape
-#%%
-colDB.shape
-#%%
-colDB.drop_duplicates().shape
-#%%
 colDB1=colDB.drop_duplicates()
-#%%
 colDB1 = colDB1.sort_values(['pos'])
 
 
 
 #%%
-'''
-Here we try two different ways to define the preferred order of the meta data fields
-'''
-#%%
 preferredOrder = colDB1.col
-#%%
-''' 
-preferredOrder = ['PatientID',
-'PatientName',
-'InstanceNumber',
-'AcquisitionNumber',
-'BitsAllocated',
-'BitsStored',
-'BurnedInAnnotation',
-'Columns',
-'Rows',
-'FrameOfReferenceUID',
-'HighBit',
-'ImageOrientationPatient',
-'ImagePositionPatient',
-'KVP',
-'LargestImagePixelValue',
-'LongitudinalTemporalInformationModified',
-'Modality',
-'PatientBirthDate',
-'PatientOrientation',
-'PhotometricInterpretation',
-'PixelAspectRatio',
-'PixelPaddingValue',
-'PixelRepresentation',
-'PixelSpacing',
-'PlanarConfiguration',
-'PositionReferenceIndicator',
-'RescaleIntercept',
-'RescaleSlope',
-'RescaleType',
-'SOPClassUID',
-'SOPInstanceUID',
-'SamplesPerPixel',
-'SeriesDescription',
-'SeriesInstanceUID',
-'SeriesNumber',
-'SliceLocation',
-'SmallestImagePixelValue',
-'SpecificCharacterSet',
-'StudyInstanceUID',
-'WindowWidth',
-'WindowCenter',
-'WindowCenterWidthExplanation']
 # minus 'PixelData',
-'''
 #%%
+# Reorder by preferred order:
 metaDB = metaDB [list(preferredOrder)]
-#%% 
+#%%
+# Use the key to sort
 metaDB = metaDB.sort_values(['PatientID','InstanceNumber'])
 #%%
 #metaDB.to_csv('sample_images_dicom_metadata.csv',index=False) # use manually defined preferred order
 metaDB.to_csv('sample_images_dicom_metadata_v1.2.csv',index=False) # use automatically created preferred order by dicom tags
 
-
-
 #%%
 # some series cannot use unique method due the type is not HASHABL
-# lesson is DF may not be the best data structure for some operations to store DICOM metadata
 #%%
 N=metaDB.PatientID.unique().shape[0]
 #%%
-patLevelCol=dict()
-slideLevelCol=dict()
-unHashableCol=dict()
+patLevelCol=[]
+slideLevelCol=[]
 #%%
 for c in metaDB.columns[:]:    
     try:
         cnt=metaDB[c].unique().shape[0]
-        print(cnt)
-        if cnt>N:
-            slideLevelCol[c] = cnt
-            print(len(slideLevelCol))
-        else:
-            patLevelCol[c] = cnt
-            print(len(patLevelCol))           
     except TypeError:
-        unHashableCol[c] = type(metaDB[c].iloc[0])
-        #print(c+'='+metaDB[c].apply(lambda x:str(x)).unique().shape[0])
+        metaDB[c] = metaDB[c].apply(str)
+        cnt=metaDB[c].unique().shape[0]
+    finally:
+        if cnt>N:
+            slideLevelCol.append(c)
+        else:
+            patLevelCol.append(c)
 
 #%%
-# Put patient level tags in one dataset, and slide level + unhashables in another one
-metaDB[[k for k,v in patLevelCol.items()]].drop_duplicates().shape
+patLevelDB = metaDB[patLevelCol].drop_duplicates()
 #%%
-patLevelDB = metaDB[[k for k,v in patLevelCol.items()]].drop_duplicates()
-#%%
-slideLevelDB = metaDB[['PatientID']+[k for k,v in slideLevelCol.items()] + [k for k,v in unHashableCol.items()]]
+slideLevelDB = metaDB[['PatientID','AcquisitionNumber']+slideLevelCol]
 #%%
 patLevelDB.columns.intersection(slideLevelDB.columns) # PatientID only
 
 #%%
 # Check the dup in patient level DB
-patLevelDB.groupby(['PatientID']).count()
-#%%
 patLevelDB.groupby(['PatientID']).size()
 #%%
+# Dup case check
 patLevelDB[patLevelDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].shape
-patLevelDB[patLevelDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].to_csv('dup.csv')
+patLevelDB[patLevelDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].to_csv('dup.csv',index=False)
 patLevelDB.drop('AcquisitionNumber',1).drop_duplicates().shape
 # So the root of the dup is for one particular patient having 5 "AcquisitionNumber" in ths slides
 
@@ -254,7 +165,12 @@ dupPat[['InstanceNumber','AcquisitionNumber']]
 
 # output:
 
+patLevelDB.to_csv('patient-level-non-pixel-meta-data.csv',index=False)
+slideLevelDB.to_csv('slide-level-non-pixel-meta-data.csv',index=False)
 
+
+
+quit()
 '''
 => Pixel data
 most interested fields:
