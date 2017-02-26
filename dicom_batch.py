@@ -9,7 +9,7 @@ def get_all_scans(path):
 	patients = os.listdir(path)
 	all_scans=[]
 	all_3d_volumes=[]
-	for pat in patients[0:1]:
+	for pat in patients[0:3]:
 		# one scan
 		one_scan = []
 		for s in os.listdir(path+'/'+pat):

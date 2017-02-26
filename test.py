@@ -22,6 +22,14 @@ more ref:
 https://www.kaggle.com/c/data-science-bowl-2017/details/tutorial
 https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
 """
+import numpy as np
+resampledPixels = np.load('resampledPixels.npz')
+print(resampledPixels.keys())
+print(resampledPixels['arr_0'].shape)
+print(resampledPixels['arr_0'][0].shape)
+print(resampledPixels['arr_0'][1].shape)
+print(resampledPixels['arr_0'][2].shape)
+quit()
 
 PWD='..'
 import os
@@ -33,22 +41,22 @@ patients,allScan,allPixels = get_all_scans(INPUT_FOLDER)
 
 
 from dicom_batch import resampling
-newPixels = resampling(allScan,allPixels)
+resampledPixels = resampling(allScan,allPixels)
 
 print(allPixels[0].shape)
 #(134, 512, 512)
-print(newPixels[0].shape)
+print(resampledPixels[0].shape)
 #(335, 306, 306)
+print(len(resampledPixels))
+np.savez('resampledPixels.npz',resampledPixels)
 
 
 
 
-
-
-    
+quit()    
 # Per Guido Zuidhof's recommendation, the following two steps should be carried out prior to the training
 from dicom_batch import normalize
-normalizedPixels = [normalize(p) for p in newPixels]
+normalizedPixels = [normalize(p) for p in resampledPixels]
 from dicom_batch import zero_center
 zerocenteredPixels = [zero_center(p) for p in normalizedPixels]
 
