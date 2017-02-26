@@ -22,6 +22,7 @@ more ref:
 https://www.kaggle.com/c/data-science-bowl-2017/details/tutorial
 https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
 """
+'''
 import numpy as np
 resampledPixels = np.load('resampledPixels.npz')
 print(resampledPixels.keys())
@@ -37,7 +38,7 @@ plt.show()
 plt.hist(resampledPixels['arr_0'][2].flatten(),bins=100)
 plt.show()
 quit()
-
+'''
 PWD='..'
 import os
 INPUT_FOLDER= os.path.join(PWD,'sample_images')
@@ -55,6 +56,7 @@ print(allPixels[0].shape)
 print(resampledPixels[0].shape)
 #(335, 306, 306)
 print(len(resampledPixels))
+import numpy as np
 np.savez('resampledPixels.npz',resampledPixels)
 
 
