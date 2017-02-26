@@ -12,41 +12,105 @@ version 20170221 by Jian: more on visual
 version 20170222 by Jian: batch process, metadata DB
 version 20170223.1 by Jian: metadata at patient level, slide level, and unhashable types
 version 20170223.2 by Jian: refine unhashable extraction
+version 20170224.1 by jian: (partial) packaging, pixel to volume
+version 20170224.2 by jian: more on DICOM, best ref:
+http://nipy.org/nibabel/dicom/dicom.html
+http://nipy.org/nibabel/dicom/dicom_orientation.html
 
-to-do normalization, packaging, OOing
+version 2017025.1 by jian: dicom geometry
+version 2017025.2 by jian: normalization
+to-do , *OOing
 """
 
-
-
+from dicom_batch import get_all_scans
 PWD='..'
-INPUT_FOLDER=PWD+'/sample_images/'
 import os
-patients = os.listdir(INPUT_FOLDER)
+print(os.path.join(PWD,'sample_images'))
 
-import dicom
-allScan=[[dicom.read_file(INPUT_FOLDER+pat+'/'+s) for s in os.listdir(INPUT_FOLDER+pat)] for pat in patients]
+INPUT_FOLDER=PWD+'/sample_images/'
+patients,allScan,allPixels = get_all_scans(INPUT_FOLDER)
 
+
+import matplotlib.pyplot as plt
+fstscan = allPixels[0]
+
+print(fstscan.shape)
+
+# raw value in the scan
+from scipy.stats import itemfreq
+frq = itemfreq(fstscan)
+print(frq)
+plt.hist(fstscan.flatten(),bins=100)
+plt.show()
+quit()
+
+
+
+print(fstscan[0][0,0])
+print(fstscan[0][233,511-175])
+print(fstscan[0][275,511-256]) # to match /w Mango output as Mango's X direction is per patient's view
+'''
+0,0,-3024,-2000
+175,233,-202,822
+256,275,298,1322
+998
+1344
+-2000
+1082
+1004
+'''
+
+fig,axes = plt.subplots(1,3)
+axes[0].imshow(fstscan[133], cmap="gray",origin='lower')
+axes[1].imshow(fstscan[123])
+axes[2].imshow(fstscan[100,:,:])
+plt.suptitle('sample slices')
+plt.show()
+plt.imshow(fstscan[100].T)
+plt.show()
+plt.imshow(fstscan[:,255,:])
+plt.show()
+plt.imshow(fstscan[:,:,255])
+plt.show()
+quit()
 #%%
-# handle single slide:
+# use first slide of 1st and 2nd patient as example
 fstfst = allScan[0][0]
+'''
+name=xx
+print(name+'[')
+print(fstfst.data_element(name).tag)
+print(fstfst.data_element(name).name)
+print(fstfst.data_element(name).VR)
+print(fstfst.data_element(name).VM)
+print(fstfst.data_element(name).value)
+'''
 scdfst = allScan[1][0]
 
-#%%
-rec=dict()
-pos=dict()
-for name in fstfst.dir():
-    if name!='PixelData':
-        print(name+'[')
-        print(fstfst.data_element(name).tag)
-        print(fstfst.data_element(name).name)
-        print(fstfst.data_element(name).VR)
-        print(fstfst.data_element(name).VM)
-        print(fstfst.data_element(name).value)
-        print(']')
-        rec[name] = fstfst.data_element(name).value
-        pos[name] = fstfst.data_element(name).tag
-    else:
-        print(type(fstfst.PixelData))
+# Have to be sorted before present
+
+import numpy as np
+
+
+[slices[0].SliceThickness]+ slices[0].PixelSpacing
+spacing = np.array([slices[0].SliceThickness]+ slices[0].PixelSpacing,dtype=np.float32)
+resize_factor=spacing/[1,1,1]
+new_shape=np.round(image.shape * resize_factor)
+real_resize_factor=new_shape/image.shape
+spacing /real_resize_factor
+
+PhysicalSpans = image.shape * spacing # physical sizes
+np.round(PhysicalSpans / [1,1,1]) == new_shape
+PhysicalSpans / new_shape - spacing /real_resize_factor
+
+import scipy.ndimage
+image1=scipy.ndimage.interpolation.zoom(image,real_resize_factor,mode='nearest')
+image.shape
+image1.shape
+# doesn't work in pycharm
+#%matplotlib inline
+
+
 
 
 
@@ -184,19 +248,9 @@ Rescale Slope
 
 '''
 
-quit()
-
-import matplotlib.pyplot as plt
 
 
-# show individual slide
-def showSlide(patId, slideNum):
-	slices=[dicom.read_file(INPUT_FOLDER+patients[patId]+'/'+s) for s in os.listdir(INPUT_FOLDER+patients[patId])]
-	print(slices[slideNum])
-	plt.imshow(slices[slideNum].pixel_array)
-	plt.title('pat '+str(patId)+': slide'+str(slideNum) + ' (without normalization)')
-	plt.colorbar()
-	plt.show()
+
 
 
 # show a whole scan
@@ -213,9 +267,6 @@ def showScan(patId=0): #134
 		plt.imshow(slices[i].pixel_array)
 	plt.show()
 '''
-showSlide(9,11)
-showSlide(9,11)
-showSlide(14,51)
 '''
 for pat in [3,5,9]: #range(len(patients)):
 	print(pat)
@@ -244,10 +295,11 @@ quit()
 
 quit()
 
-import numpy as np
 slice_thickness=np.abs(np.array([slices[j-1].SliceLocation-slices[j].SliceLocation for j in range(1,len(slices))]).mean())
 
-image = np.stack([s.pixel_array for s in slices])
+
+
+
 image=image.astype(np.int16) # from nint16
 image[image==-2000]=0
 
@@ -265,7 +317,6 @@ plt.xlabel('Housfield Units (HU)')
 plt.ylabel('Frequency')
 plt.show()
 
-plt.imshow(image[1],cmap=plt.cm.gray)
 
 
 
@@ -295,28 +346,6 @@ plt.show()
 quit()
 
 
-
-
-[slices[0].SliceThickness]+ slices[0].PixelSpacing
-spacing = np.array([slices[0].SliceThickness]+ slices[0].PixelSpacing,dtype=np.float32)
-resize_factor=spacing/[1,1,1]
-new_shape=np.round(image.shape * resize_factor)
-real_resize_factor=new_shape/image.shape
-spacing /real_resize_factor
-
-PhysicalSpans = image.shape * spacing # physical sizes
-np.round(PhysicalSpans / [1,1,1]) == new_shape
-PhysicalSpans / new_shape - spacing /real_resize_factor
-
-
-
-
-import scipy.ndimage
-image1=scipy.ndimage.interpolation.zoom(image,real_resize_factor,mode='nearest')
-image.shape
-image1.shape
-# doesn't work in pycharm
-#%matplotlib inline
 
 
 ###########################################################################################
@@ -364,6 +393,9 @@ def get_pixels_hu(scans):
     
     return np.array(image, dtype=np.int16) 
 #%%
+
+
+
 first_patient = load_scan(INPUT_FOLDER + patients[0])
 #%%
 first_patient_pixels = get_pixels_hu(first_patient)
@@ -420,7 +452,7 @@ def plot_3d(image, threshold=-300):
 #%%
 plot_3d(pix_resampled, 400)
 #%%
-#PathDicom = 'C:/Users/daij12/Documents/Analysis/ML/kaggle/data-science-bowl-2017/sample_images/00cba091fa4ad62cc3200a657aeb957e/'
+#PathDicom = '../sample_images/00cba091fa4ad62cc3200a657aeb957e/'
 #lstFilesDCM = []  # create an empty list
 #for dirName, subdirList, fileList in os.walk(PathDicom):
 #    for filename in fileList:
