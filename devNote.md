@@ -14,6 +14,7 @@ ref on pydicom: http://pydicom.readthedocs.io/en/stable/getting_started.html
 2017-2-23-thu dicom metadata, patient level vs slice level
 2017-2-24-fri dicom pixel data, dicom geometry
 2017-2-25-sat conversion, resampling and normalization 
+2017-2-26-sun check training and test sets
 
 DL libs:
 caffe: 

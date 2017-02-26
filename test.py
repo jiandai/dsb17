@@ -17,11 +17,17 @@ http://nipy.org/nibabel/dicom/dicom_orientation.html
 
 version 2017025.1 by jian: dicom geometry
 version 2017025.2 by jian: convert to haunsfield unit, resampling
-to-do accelerate resampling, *OOing
+to-do: 
+accelerate resampling
+3d-visualization
+segmentation
+*OOing
+
 more ref:
 https://www.kaggle.com/c/data-science-bowl-2017/details/tutorial
 https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
 """
+
 '''
 import numpy as np
 resampledPixels = np.load('resampledPixels.npz')
@@ -39,6 +45,7 @@ plt.hist(resampledPixels['arr_0'][2].flatten(),bins=100)
 plt.show()
 quit()
 '''
+
 PWD='..'
 import os
 INPUT_FOLDER= os.path.join(PWD,'sample_images')
