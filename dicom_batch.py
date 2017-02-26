@@ -96,3 +96,18 @@ def resampling(scans,volumes,new_spacing=[1,1,1]):
 		import scipy.ndimage
 		resampled_volumes.append(scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest'))
 	return resampled_volumes
+
+
+def normalize(image):
+	MIN_BOUND = -1000.0
+	MAX_BOUND = 400.0
+	image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
+	image[image>1] = 1.
+	image[image<0] = 0.
+	return image
+
+
+def zero_center(image):
+	PIXEL_MEAN = 0.25
+	image = image - PIXEL_MEAN
+	return image

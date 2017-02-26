@@ -2,8 +2,6 @@
 version 20170116 by Jian:
 follow:
     https://www.kaggle.com/gzuidhof/data-science-bowl-2017/full-preprocessing-tutorial
-ref:
-    https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
 
 version 20170131 by Jian: revisit
 version 20170206 by Jian: revisit
@@ -20,6 +18,9 @@ http://nipy.org/nibabel/dicom/dicom_orientation.html
 version 2017025.1 by jian: dicom geometry
 version 2017025.2 by jian: convert to haunsfield unit, resampling
 to-do accelerate resampling, *OOing
+more ref:
+https://www.kaggle.com/c/data-science-bowl-2017/details/tutorial
+https://pyscience.wordpress.com/2014/09/08/dicom-in-python-importing-medical-image-data-into-numpy-with-pydicom-and-vtk/
 """
 
 PWD='..'
@@ -40,19 +41,36 @@ print(newPixels[0].shape)
 #(335, 306, 306)
 
 
+
+
+
+
+    
+# Per Guido Zuidhof's recommendation, the following two steps should be carried out prior to the training
+from dicom_batch import normalize
+normalizedPixels = [normalize(p) for p in newPixels]
+from dicom_batch import zero_center
+zerocenteredPixels = [zero_center(p) for p in normalizedPixels]
+
+
 import matplotlib.pyplot as plt
-plt.imshow(allPixels[0][0])
+plt.hist(normalizedPixels[0].flatten(),bins=100)
 plt.show()
-plt.imshow(newPixels[0][0])
+plt.imshow(normalizedPixels[0][0])
+plt.colorbar()
+plt.show()
+plt.imshow(zerocenteredPixels[0][0])
+plt.colorbar()
 plt.show()
 quit()
+
+
+
 
 # raw value in the scan
 from scipy.stats import itemfreq
 frq = itemfreq(fstscan)
 print(frq)
-plt.hist(fstscan.flatten(),bins=100)
-plt.show()
 # Have to be sorted before present
 
 
@@ -222,19 +240,6 @@ sliceLevelDB.to_csv('slice-level-non-pixel-meta-data.csv',index=False)
 
 
 
-quit()
-'''
-=> Pixel data
-most interested fields:
-Instance Number
-Image Position
-Image Orientation
-Slice Location
-Pixel Spacing 
-Rescale Intercept
-Rescale Slope
-
-'''
 
 
 
@@ -262,50 +267,6 @@ for pat in [3,5,9]: #range(len(patients)):
 
 
 quit()
-
-
-# for len being 110
-#nrow=10
-#ncol=11
-# for len being 133
-
-
-
-
-
-
-
-#for i in range(25, 50):
-#	plt.subplot(5,5,i-24)
-#	plt.imshow(slices[i].pixel_array)
-#plt.show()
-
-
-quit()
-
-slice_thickness=np.abs(np.array([slices[j-1].SliceLocation-slices[j].SliceLocation for j in range(1,len(slices))]).mean())
-
-
-
-
-image=image.astype(np.int16) # from nint16
-image[image==-2000]=0
-
-intercept = slices[0].RescaleIntercept
-slope = slices[0].RescaleSlope
-
-if slope != 1:
-	image = splope * image.astype(np.float64)
-	image = image.astype(np.int16)
-image += np.int16(intercept)
-image=image.astype(np.int16)
-
-plt.hist(image.flatten(),bins=100)
-plt.xlabel('Housfield Units (HU)')
-plt.ylabel('Frequency')
-plt.show()
-
-
 
 
 
@@ -342,58 +303,6 @@ from skimage import morphology
 import pandas as pd
 
 
-
-
-# Load the scans in given folder path
-def load_scan(path):
-    slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
-    slices.sort(key = lambda x: int(x.InstanceNumber))
-    try:
-        slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
-    except:
-        slice_thickness = np.abs(slices[0].SliceLocation - slices[1].SliceLocation)
-        
-    for s in slices:
-        s.SliceThickness = slice_thickness
-        
-    return slices
-
-#%%
-def get_pixels_hu(scans):
-    image = np.stack([s.pixel_array for s in scans])
-    # Convert to int16 (from sometimes int16), 
-    # should be possible as values should always be low enough (<32k)
-    image = image.astype(np.int16)
-
-    # Set outside-of-scan pixels to 0
-    # The intercept is usually -1024, so air is approximately 0
-    image[image == -2000] = 0
-    
-    # Convert to Hounsfield units (HU)
-    intercept = scans[0].RescaleIntercept
-    slope = scans[0].RescaleSlope
-    
-    if slope != 1:
-        image = slope * image.astype(np.float64)
-        image = image.astype(np.int16)
-        
-    image += np.int16(intercept)
-    
-    return np.array(image, dtype=np.int16) 
-#%%
-
-
-
-first_patient = load_scan(INPUT_FOLDER + patients[0])
-#%%
-first_patient_pixels = get_pixels_hu(first_patient)
-#%%
-plt.hist(first_patient_pixels.flatten(), bins=80, color='c')
-plt.xlabel("Hounsfield Units (HU)")
-plt.ylabel("Frequency")
-plt.show()
-#%%
-#%%
 
 
 
