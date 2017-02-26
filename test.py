@@ -10,7 +10,7 @@ version 20170206 by Jian: revisit
 
 version 20170221 by Jian: more on visual 
 version 20170222 by Jian: batch process, metadata DB
-version 20170223.1 by Jian: metadata at patient level, slide level, and unhashable types
+version 20170223.1 by Jian: metadata at patient level, slice level, and unhashable types
 version 20170223.2 by Jian: refine unhashable extraction
 version 20170224.1 by jian: (partial) packaging, pixel to volume
 version 20170224.2 by jian: more on DICOM, best ref:
@@ -18,23 +18,34 @@ http://nipy.org/nibabel/dicom/dicom.html
 http://nipy.org/nibabel/dicom/dicom_orientation.html
 
 version 2017025.1 by jian: dicom geometry
-version 2017025.2 by jian: normalization
-to-do , *OOing
+version 2017025.2 by jian: convert to haunsfield unit, resampling
+to-do accelerate resampling, *OOing
 """
 
-from dicom_batch import get_all_scans
 PWD='..'
 import os
-print(os.path.join(PWD,'sample_images'))
-
-INPUT_FOLDER=PWD+'/sample_images/'
+INPUT_FOLDER= os.path.join(PWD,'sample_images')
+from dicom_batch import get_all_scans
 patients,allScan,allPixels = get_all_scans(INPUT_FOLDER)
 
 
-import matplotlib.pyplot as plt
-fstscan = allPixels[0]
 
-print(fstscan.shape)
+
+from dicom_batch import resampling
+newPixels = resampling(allScan,allPixels)
+
+print(allPixels[0].shape)
+#(134, 512, 512)
+print(newPixels[0].shape)
+#(335, 306, 306)
+
+
+import matplotlib.pyplot as plt
+plt.imshow(allPixels[0][0])
+plt.show()
+plt.imshow(newPixels[0][0])
+plt.show()
+quit()
 
 # raw value in the scan
 from scipy.stats import itemfreq
@@ -42,8 +53,11 @@ frq = itemfreq(fstscan)
 print(frq)
 plt.hist(fstscan.flatten(),bins=100)
 plt.show()
-quit()
+# Have to be sorted before present
 
+
+
+quit()
 
 
 print(fstscan[0][0,0])
@@ -66,15 +80,13 @@ axes[1].imshow(fstscan[123])
 axes[2].imshow(fstscan[100,:,:])
 plt.suptitle('sample slices')
 plt.show()
-plt.imshow(fstscan[100].T)
-plt.show()
 plt.imshow(fstscan[:,255,:])
 plt.show()
 plt.imshow(fstscan[:,:,255])
 plt.show()
 quit()
 #%%
-# use first slide of 1st and 2nd patient as example
+# use first slice of 1st and 2nd patient as example
 fstfst = allScan[0][0]
 '''
 name=xx
@@ -86,30 +98,6 @@ print(fstfst.data_element(name).VM)
 print(fstfst.data_element(name).value)
 '''
 scdfst = allScan[1][0]
-
-# Have to be sorted before present
-
-import numpy as np
-
-
-[slices[0].SliceThickness]+ slices[0].PixelSpacing
-spacing = np.array([slices[0].SliceThickness]+ slices[0].PixelSpacing,dtype=np.float32)
-resize_factor=spacing/[1,1,1]
-new_shape=np.round(image.shape * resize_factor)
-real_resize_factor=new_shape/image.shape
-spacing /real_resize_factor
-
-PhysicalSpans = image.shape * spacing # physical sizes
-np.round(PhysicalSpans / [1,1,1]) == new_shape
-PhysicalSpans / new_shape - spacing /real_resize_factor
-
-import scipy.ndimage
-image1=scipy.ndimage.interpolation.zoom(image,real_resize_factor,mode='nearest')
-image.shape
-image1.shape
-# doesn't work in pycharm
-#%matplotlib inline
-
 
 
 
@@ -179,7 +167,7 @@ metaDB.to_csv('sample_images_dicom_metadata_v1.2.csv',index=False) # use automat
 N=metaDB.PatientID.unique().shape[0]
 #%%
 patLevelCol=[]
-slideLevelCol=[]
+sliceLevelCol=[]
 #%%
 for c in metaDB.columns[:]:    
     try:
@@ -189,16 +177,16 @@ for c in metaDB.columns[:]:
         cnt=metaDB[c].unique().shape[0]
     finally:
         if cnt>N:
-            slideLevelCol.append(c)
+            sliceLevelCol.append(c)
         else:
             patLevelCol.append(c)
 
 #%%
 patLevelDB = metaDB[patLevelCol].drop_duplicates()
 #%%
-slideLevelDB = metaDB[['PatientID','AcquisitionNumber']+slideLevelCol]
+sliceLevelDB = metaDB[['PatientID','AcquisitionNumber']+sliceLevelCol]
 #%%
-patLevelDB.columns.intersection(slideLevelDB.columns) # PatientID only
+patLevelDB.columns.intersection(sliceLevelDB.columns) # PatientID only
 
 #%%
 # Check the dup in patient level DB
@@ -208,7 +196,7 @@ patLevelDB.groupby(['PatientID']).size()
 patLevelDB[patLevelDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].shape
 patLevelDB[patLevelDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].to_csv('dup.csv',index=False)
 patLevelDB.drop('AcquisitionNumber',1).drop_duplicates().shape
-# So the root of the dup is for one particular patient having 5 "AcquisitionNumber" in ths slides
+# So the root of the dup is for one particular patient having 5 "AcquisitionNumber" in ths slices
 
 metaDB[metaDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068'].shape
 dupPat = metaDB[metaDB.PatientID == '0bd0e3056cbf23a1cb7f0f0b18446068']
@@ -230,7 +218,7 @@ dupPat[['InstanceNumber','AcquisitionNumber']]
 # output:
 
 patLevelDB.to_csv('patient-level-non-pixel-meta-data.csv',index=False)
-slideLevelDB.to_csv('slide-level-non-pixel-meta-data.csv',index=False)
+sliceLevelDB.to_csv('slice-level-non-pixel-meta-data.csv',index=False)
 
 
 
@@ -406,25 +394,9 @@ plt.ylabel("Frequency")
 plt.show()
 #%%
 #%%
-def resample(image, scan, new_spacing=[1,1,1]):
-    # Determine current pixel spacing
-    spacing = map(float, ([scan[0].SliceThickness] + scan[0].PixelSpacing))
-    spacing = np.array(list(spacing))
 
-    resize_factor = spacing / new_spacing
-    new_real_shape = image.shape * resize_factor
-    new_shape = np.round(new_real_shape)
-    real_resize_factor = new_shape / image.shape
-    new_spacing = spacing / real_resize_factor
-    
-    image = scipy.ndimage.interpolation.zoom(image, real_resize_factor)
-    
-    return image, new_spacing
-#%%
-pix_resampled, spacing = resample(first_patient_pixels, first_patient, [1,1,1])
-print("Shape before resampling\t", first_patient_pixels.shape)
-print("Shape after resampling\t", pix_resampled.shape)
-#%%
+
+
 def plot_3d(image, threshold=-300):
     
     # Position the scan upright, 

@@ -54,41 +54,45 @@ def get_all_scans(path):
 			'''
 
 		voxels = numpy.stack(pixel_stack)
-		# normalization
+		# conversion
 		voxels = voxels.astype(numpy.int16)
 		voxels[voxels == -2000] = 0
+		
+		# Compute the average z-spacing
+		S = len(one_scan)
+		SliceThickness = (one_scan[0].SliceLocation - one_scan[S-1].SliceLocation)/(S-1) # assume n>1
+
     		# Convert to Hounsfield units (HU)
-		intercept = one_scan[0].RescaleIntercept
-		slope = one_scan[0].RescaleSlope
-		if slope != 1:
-			voxels = slope * voxels.astype(numpy.float64)
-			voxels = voxels.astype(numpy.int16)
-		voxels+= numpy.int16(intercept)
+		for s in range(S):
+			del one_scan[s][one_scan[s].data_element("PixelData").tag] # no longer keep PixelData
+			one_scan[s].SliceThickness = SliceThickness
+			
+			intercept = one_scan[s].RescaleIntercept
+			slope = one_scan[s].RescaleSlope
+			if slope != 1:
+				voxels[s] = slope * voxels[s].astype(numpy.float64)
+				voxels[s] = voxels[s].astype(numpy.int16)
+			voxels[s]+= numpy.int16(intercept)
+
 		voxels = numpy.array(voxels, dtype=numpy.int16) 
-    
 
 		# Some check on the most used features of one scan
-
-		n = len(one_scan)
-		print(n)
-		print(one_scan[n-1].Rows)
-		print(one_scan[n-1].Columns)
-
-		print(one_scan[n-1].InstanceNumber)
-		print(one_scan[0].SliceLocation)
-		print(one_scan[n-1].SliceLocation)
-		print(one_scan[0].SliceLocation - one_scan[n-1].SliceLocation)
-
-
-		print(one_scan[n-1].ImagePositionPatient) # physical coordinate of top left voxel
-		print(one_scan[n-1].PixelSpacing)
-		print(one_scan[n-1].ImageOrientationPatient) #
-
-		print(one_scan[n-1].RescaleIntercept)
-		print(one_scan[n-1].RescaleSlope)
-
-
+		#
 		all_scans = all_scans + [one_scan]
 		all_3d_volumes = all_3d_volumes + [voxels]
 	return (patients,all_scans,all_3d_volumes)
 
+def resampling(scans,volumes,new_spacing=[1,1,1]):
+	resampled_volumes = []
+	for p in range(len(scans)):
+		scan = scans[p]
+		volume = volumes[p]
+		old_shape = volume.shape
+		import numpy
+		spacing = numpy.array([scan[0].SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
+		reshape_factor = numpy.round(spacing/new_spacing * old_shape)/old_shape
+		new_shape = reshape_factor * old_shape
+		new_spacing = spacing / reshape_factor
+		import scipy.ndimage
+		resampled_volumes.append(scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest'))
+	return resampled_volumes
