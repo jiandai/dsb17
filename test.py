@@ -29,6 +29,13 @@ print(resampledPixels['arr_0'].shape)
 print(resampledPixels['arr_0'][0].shape)
 print(resampledPixels['arr_0'][1].shape)
 print(resampledPixels['arr_0'][2].shape)
+import matplotlib.pyplot as plt
+plt.hist(resampledPixels['arr_0'][0].flatten(),bins=100)
+plt.show()
+plt.hist(resampledPixels['arr_0'][1].flatten(),bins=100)
+plt.show()
+plt.hist(resampledPixels['arr_0'][2].flatten(),bins=100)
+plt.show()
 quit()
 
 PWD='..'
@@ -61,9 +68,6 @@ from dicom_batch import zero_center
 zerocenteredPixels = [zero_center(p) for p in normalizedPixels]
 
 
-import matplotlib.pyplot as plt
-plt.hist(normalizedPixels[0].flatten(),bins=100)
-plt.show()
 plt.imshow(normalizedPixels[0][0])
 plt.colorbar()
 plt.show()

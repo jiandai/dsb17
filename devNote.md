@@ -16,7 +16,9 @@ ref on pydicom: http://pydicom.readthedocs.io/en/stable/getting_started.html
 2017-2-25-sat conversion, resampling and normalization 
 
 DL libs:
-caffe
+caffe: 
+http://christopher5106.github.io/deep/learning/2015/09/04/Deep-learning-tutorial-on-Caffe-Technology.html
+http://christopher5106.github.io/big/data/2015/07/16/deep-learning-install-caffe-cudnn-cuda-for-digits-python-on-ubuntu-14-04.html
 keras
 tensorflow
 theano
