@@ -27,6 +27,16 @@ cancer
 0    1035
 1     362
 '''
-quit()
-print(pd.DataFrame(files,columns=['id']).columns)
-print(stg1_labels.head())
+fileDF = pd.DataFrame(files,columns=['id'])
+print(fileDF.columns)
+print(stg1_labels.columns)
+scanDF = fileDF.set_index('id').join(stg1_labels.set_index('id'),how='left')
+print(scanDF.groupby('cancer').size())
+testDF = scanDF[pd.isnull(scanDF.cancer)]
+trainingDF = scanDF[pd.notnull(scanDF.cancer)] # should be the "same" as stg1_labels
+
+# Iterate through training set
+for id in trainingDF.index:
+	slices = os.listdir('../data/stage1/'+id)
+	print(id+'\t'+str(len(slices)))
+	# To apply pydicom to read in the slice files
