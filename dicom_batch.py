@@ -1,5 +1,10 @@
 '''
 '''
+def get_one_scan(path):
+	import os
+	slices = os.listdir(path)
+	return slices 
+
 def get_all_scans(path):
 	'''
 	'''

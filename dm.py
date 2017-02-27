@@ -36,7 +36,8 @@ testDF = scanDF[pd.isnull(scanDF.cancer)]
 trainingDF = scanDF[pd.notnull(scanDF.cancer)] # should be the "same" as stg1_labels
 
 # Iterate through training set
+from dicom_batch import get_one_scan
 for id in trainingDF.index:
-	slices = os.listdir('../data/stage1/'+id)
+	slices = get_one_scan('../data/stage1/'+id)
 	print(id+'\t'+str(len(slices)))
 	# To apply pydicom to read in the slice files
