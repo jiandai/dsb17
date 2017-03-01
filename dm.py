@@ -1,9 +1,14 @@
+# version < 20170301 by jian
+# version 20170301 by jian: run on server
 import os
 # all data
-files = os.listdir('../data/stage1/')
+#files = os.listdir('../data/stage1/') # local
+files = os.listdir('../download/stage1/') # server path
+
 import pandas as pd
 # training labels
-stg1_labels = pd.read_csv('../data/stage1_labels.csv')
+#stg1_labels = pd.read_csv('../data/stage1_labels.csv')
+stg1_labels = pd.read_csv('../download/stage1_labels.csv') # server path
 
 # data check
 print(set(stg1_labels.id).difference(files)) # set()
@@ -38,6 +43,7 @@ trainingDF = scanDF[pd.notnull(scanDF.cancer)] # should be the "same" as stg1_la
 # Iterate through training set
 from dicom_batch import get_one_scan
 for id in trainingDF.index:
-	slices = get_one_scan('../data/stage1/'+id)
+	#slices = get_one_scan('../data/stage1/'+id)
+	slices = get_one_scan('../download/stage1/'+id)
 	print(id+'\t'+str(len(slices)))
 	# To apply pydicom to read in the slice files
