@@ -1,4 +1,4 @@
-2017-1-13_ make the dir at 12:32:17 PM
+2017-1-13-.. make the dir at 12:32:17 PM
 ... ...
 2017-2-17-fri wrap up py2oracle
 2017-2-18-sat py packing, OO paradigm
@@ -16,6 +16,11 @@ ref on pydicom: http://pydicom.readthedocs.io/en/stable/getting_started.html
 2017-2-25-sat conversion, resampling and normalization 
 2017-2-26-sun check training and test sets
 2017-2-27-mon separate training from test
+2017-2-28-tue resolve the storage issue by using daij12's workspace on rescomp3, download data to server per wget
+=> review the time line
+2017-3-1-wed extract the data by 7z 
+
+
 
 DL libs:
 caffe: 
