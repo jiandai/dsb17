@@ -24,6 +24,8 @@ ref on pydicom: http://pydicom.readthedocs.io/en/stable/getting_started.html
 - 2017-3-3-fri ML methodology review: CV, etc
 
 - 2017-3-5-sun reading on 3d ct data processing
+- 2017-3-6-mon work on the nonsense/idiotic/naive baseline, and tensorflow installation
+- 2017-3-7-tue reading preprocess and segmentation, kernel test
 
 
 

@@ -1,5 +1,6 @@
 # version < 20170301 by jian
 # version 20170301 by jian: run on server
+# version 20170305 by jian: metadata of stage 1 data
 import os
 # all data
 #files = os.listdir('../data/stage1/') # local
@@ -26,7 +27,7 @@ there are totally 1595 cases
 '''
 
 # training case labels:
-print(stg1_labels.groupby('cancer').size())
+print(stg1_labels.groupby('cancer').size()) # or use "stg1_labels.cancer.value_counts()"
 '''
 cancer
 0    1035
@@ -41,9 +42,19 @@ testDF = scanDF[pd.isnull(scanDF.cancer)]
 trainingDF = scanDF[pd.notnull(scanDF.cancer)] # should be the "same" as stg1_labels
 
 # Iterate through training set
+print(trainingDF)
+trainingDF['n_slices']=0
 from dicom_batch import get_one_scan
-for id in trainingDF.index:
+all_scan=[]
+for id in trainingDF.index[:]:
 	#slices = get_one_scan('../data/stage1/'+id)
 	slices = get_one_scan('../download/stage1/'+id)
-	print(id+'\t'+str(len(slices)))
+	trainingDF.loc[id,'n_slices'] = len(slices)
+	#all_scan.append(slices)
 	# To apply pydicom to read in the slice files
+print(trainingDF)
+#trainingDF.n_slices.max()
+#541
+
+#trainingDF.n_slices.min()
+#94

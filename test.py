@@ -15,12 +15,14 @@ version 20170224.2 by jian: more on DICOM, best ref:
 http://nipy.org/nibabel/dicom/dicom.html
 http://nipy.org/nibabel/dicom/dicom_orientation.html
 
-version 2017025.1 by jian: dicom geometry
-version 2017025.2 by jian: convert to haunsfield unit, resampling
+version 20170225.1 by jian: dicom geometry
+version 20170225.2 by jian: convert to haunsfield unit, resampling
+
 to-do: 
 accelerate resampling
 3d-visualization
 segmentation
+
 *OOing
 
 more ref:
