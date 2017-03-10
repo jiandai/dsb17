@@ -11,6 +11,8 @@ import pandas as pd
 #stg1_labels = pd.read_csv('../data/stage1_labels.csv')
 stg1_labels = pd.read_csv('../download/stage1_labels.csv') # server path
 
+
+
 # data check
 print(set(stg1_labels.id).difference(files)) # set()
 # test set
@@ -34,25 +36,51 @@ cancer
 1     362
 '''
 fileDF = pd.DataFrame(files,columns=['id'])
-print(fileDF.columns)
+
 print(stg1_labels.columns)
+
 scanDF = fileDF.set_index('id').join(stg1_labels.set_index('id'),how='left')
 print(scanDF.groupby('cancer').size())
-testDF = scanDF[pd.isnull(scanDF.cancer)]
-trainingDF = scanDF[pd.notnull(scanDF.cancer)] # should be the "same" as stg1_labels
+
+
+scanDF['n_x'] = -1
+scanDF['n_y'] = -1
+scanDF['n_z'] = -1
+scanDF['d_x'] = -1
+scanDF['d_y'] = -1
+scanDF['d_z'] = -1
+scanDF['intercept'] = -1
+scanDF['slope'] = -1
+
+
+testDF = scanDF[pd.isnull(scanDF.cancer)].copy()
+trainingDF = scanDF[pd.notnull(scanDF.cancer)].copy() # should be the "same" as stg1_labels
+# ref the use of ".copy()" to http://stackoverflow.com/questions/37435468/pandas-settingwithcopywarning-when-using-a-subset-of-columns?rq=1
+
+
+
+
+
 
 # Iterate through training set
-print(trainingDF)
-trainingDF['n_slices']=0
 from dicom_batch import get_one_scan
 all_scan=[]
-for id in trainingDF.index[:]:
+for id in trainingDF.index[:1]:
 	#slices = get_one_scan('../data/stage1/'+id)
 	slices = get_one_scan('../download/stage1/'+id)
-	trainingDF.loc[id,'n_slices'] = len(slices)
-	#all_scan.append(slices)
+
+	trainingDF.loc[id,'n_x'] = slices[0].Rows
+	trainingDF.loc[id,'n_y'] = slices[0].Columns
+	trainingDF.loc[id,'n_z'] = len(slices)
+	trainingDF.loc[id,'d_x'] = slices[0].PixelSpacing[0]
+	trainingDF.loc[id,'d_y'] = slices[0].PixelSpacing[1]
+	trainingDF.loc[id,'intercept'] = slices[0].RescaleIntercept
+	trainingDF.loc[id,'slope'] = slices[0].RescaleSlope
+	for s,slice in enumerate(slices):
+		print([slice.InstanceNumber]+slice.ImagePositionPatient + [slice.SliceLocation,str(slice.Rows),str(slice.Columns)]+slice.PixelSpacing+[slice.RescaleIntercept,slice.RescaleSlope])
+	all_scan.append(slices)
 	# To apply pydicom to read in the slice files
-print(trainingDF)
+print(trainingDF.head())
 #trainingDF.n_slices.max()
 #541
 

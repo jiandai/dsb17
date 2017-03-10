@@ -2,7 +2,9 @@
 '''
 def get_one_scan(path):
 	import os
-	slices = os.listdir(path)
+	import dicom
+	slices = [ dicom.read_file(path+'/'+s) for s in os.listdir(path) ]
+	slices.sort(key=lambda x:x.InstanceNumber) 
 	return slices 
 
 def get_all_scans(path):

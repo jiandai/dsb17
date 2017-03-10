@@ -15,7 +15,7 @@
 - ... ...
 - 2017-2-26-sun check training and test sets
 - 2017-2-27-mon separate training from test
-- 2017-2-28-tue resolve the storage issue by using workspace on server, download data to server per wget => review the time line
+- 2017-2-28-tue resolve the storage issue by using workspace on server, download data to server per wget + cookies file => review the time line
 - 2017-3-1-wed extract the data by 7z, more data from kaggle, revamp MNIST test case on server
 - 2017-3-2-thu start to use kernel feature of kaggle /w MNIST
 - 2017-3-3-fri ML methodology review: CV, etc
@@ -23,6 +23,8 @@
 - 2017-3-5-sun reading on 3d ct data processing
 - 2017-3-6-mon work on the nonsense/idiotic/naive baseline, and tensorflow installation, use new server to run tensorflow
 - 2017-3-7-tue reading preprocess and segmentation, kernel test
+- 2017-3-8-wed DL meeting, Priya joined, theano broken on `new server'
+- 2017-3-9-thu LSF array, install pydicom on server
 
 
 

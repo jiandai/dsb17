@@ -7,3 +7,7 @@
 *.xls
 *.npz
 *.local
+log/
+log/*
+*.b
+tst.py
