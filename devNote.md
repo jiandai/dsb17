@@ -25,6 +25,7 @@
 - 2017-3-7-tue reading preprocess and segmentation, kernel test
 - 2017-3-8-wed DL meeting, Priya joined, theano broken on `new server'
 - 2017-3-9-thu LSF array, install pydicom on server
+- 2017-3-10-fri test lsf array for paralle batches
 
 
 
