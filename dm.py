@@ -3,6 +3,44 @@
 # version 20170305 by jian: metadata of stage 1 data
 # version 20170309 by jian: deal /w pandas new column, install pydicom on server for user
 # version 20170310 by jian: test on iterating through `all' scans
+
+# case check per Liz
+#case ='../tmp/af2b9f7d489ffab8e3590658853cacf8/'
+case ='../input/sample_images/0a099f2549429d29b32f349e95fb2244/'
+import dicom
+import os
+case_slices=[dicom.read_file(case+f) for f in os.listdir(case)]
+case_slices.sort(key=lambda x:x.InstanceNumber)
+prev_pos,prev_loc=0,0
+for j,slice in enumerate(case_slices):
+	if j>0:
+		pos_diff=slice.ImagePositionPatient[2]-prev_pos
+		loc_diff=slice.SliceLocation-prev_loc
+		print slice.InstanceNumber,slice.ImagePositionPatient[2],slice.SliceLocation,pos_diff,loc_diff
+	prev_pos=slice.ImagePositionPatient[2]
+	prev_loc=slice.SliceLocation
+'''
+2 -1339.80005 340.70 -1.30005 -1.3
+3 -1341.09998 339.40 -1.29993 -1.3
+4 -1342.40002 338.10 -1.30004 -1.3
+5 -1343.69995 336.80 -1.29993 -1.3
+6 -1345 335.50 -1.30005 -1.3
+7 -1346.30005 334.20 -1.30005 -1.3
+8 -1347.59998 332.90 -1.29993 -1.3
+9 -1348.90002 331.60 -1.30004 -1.3
+10 -1350.19995 330.30 -1.29993 -1.3
+'''
+# lesson is ImagePositionPatient[2] is preferred, and SliceLocation may be less accurate
+quit()
+
+# all data
+#folders = os.listdir('../data/stage1/') # local
+folders = os.listdir('../input/stage1/') # server path
+print folders[0]
+quit()
+
+
+
 import sys
 # assume len(sys.argv)>1:
 # assertion: input an integer
@@ -27,10 +65,6 @@ for arr in loaded['arr_0']:
 
 quit()
 
-import os
-# all data
-#folders = os.listdir('../data/stage1/') # local
-folders = os.listdir('../input/stage1/') # server path
 
 from dicom_batch import get_one_scan
 vox_list=[]

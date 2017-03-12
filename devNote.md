@@ -27,6 +27,7 @@
 - 2017-3-9-thu LSF array, install pydicom on server
 - 2017-3-10-fri test lsf array for paralle batches
 
+- ... ...
 
 
 ## Ref
