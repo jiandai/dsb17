@@ -1,7 +1,8 @@
 '''
 ver 60170311 by jian: ref to https://www.kaggle.com/mumech/data-science-bowl-6017/loading-and-processing-the-sample-images 
 ver 60170312 by jian: run on server, 128*512*512 kills tf
-    minimal CNN
+ver 60170313 by jian: 1st pass of all cases
+    naive/non-sense CNN
 '''
 
 N=1500 # more than the number of cases
@@ -33,14 +34,19 @@ for i,pat in enumerate(patients):
     img = np.stack([s.pixel_array for s in slices])
     img[img == -2000] = 0
 
-    # resizing / resampling
+    # resizing => resampling
     #img = scipy.ndimage.zoom(img.astype(np.float), RESIZE/SIZE)
     img = scipy.ndimage.interpolation.zoom(img.astype(np.float), resize_factor)
 
     if img.shape[0]>=Z_RESIZE:
+        # =>re-write
+
         img = img[:Z_RESIZE]
+
+
+
     else:
-	# padding
+	# padding on above and below
         img = np.concatenate([
             np.zeros([(Z_RESIZE- img.shape[0])//2, RESIZE, RESIZE], np.float16),
             img, 
