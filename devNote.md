@@ -26,8 +26,9 @@
 - 2017-3-8-wed DL meeting, Priya joined, theano broken on `new server'
 - 2017-3-9-thu LSF array, install pydicom on server
 - 2017-3-10-fri test lsf array for paralle batches
-
 - ... ...
+- 2017-3-11-sat run on local the ``non-sense'' model
+- 2017-3-12-sun run on server by tf for bigger input, and more cases
 
 
 ## Ref
