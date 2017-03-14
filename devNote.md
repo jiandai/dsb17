@@ -34,6 +34,7 @@
 - 2017-3-11-sat run on local the "non-sense" model
 - 2017-3-12-sun run on server by tf for bigger input, and more cases
 - 2017-3-13-mon 1st full pass /w silly cnn, correct z-orientation, store pre-processed files
+- 2017-3-14-tue LSF array for paralle batch to pre-process tr and test sets
 
 
 ## Ref

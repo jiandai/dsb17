@@ -9,6 +9,7 @@ ver 60170313.3 by jian: resample and save to npz
 ver 60170313.4 by jian: split the script
 
 to-do: 
+=> use multiple batches of pre-proced data
 => use a test training shape to have a pass
 => optimize the training shape
 => add prediction
