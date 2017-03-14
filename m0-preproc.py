@@ -11,6 +11,7 @@ ver 60170313.4 by jian: split the script, and this portion becomes "m0-preproc.p
 to-do: 
 => pre-proc test set
 => npz for mini batch in parallel
+
 '''
 
 
