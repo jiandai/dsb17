@@ -1,6 +1,10 @@
 ##Development Diary 
 - 2017-1-13-fri set the repo ~ 12:32:17 PM
-- ... ...
+- 2017-1-26-thu 1st DL meeting /w Liz & Thomas
+- ... ... 
+- [prep DL libs]
+- ... ... 
+- 2017-2-14-tue start to run on gpu
 - 2017-2-15-wed present in DL grp meeting
 - 2017-2-17-fri wrap up py2oracle
 - 2017-2-18-sat py packing, OO paradigm
@@ -23,17 +27,18 @@
 - 2017-3-5-sun reading on 3d ct data processing
 - 2017-3-6-mon work on the nonsense/idiotic/naive baseline, and tensorflow installation, use new server to run tensorflow
 - 2017-3-7-tue reading preprocess and segmentation, kernel test
-- 2017-3-8-wed DL meeting, Priya joined, theano broken on `new server'
+- 2017-3-8-wed DL meeting, Priya joined, theano broken on "new server"
 - 2017-3-9-thu LSF array, install pydicom on server
 - 2017-3-10-fri test lsf array for paralle batches
 - ... ...
-- 2017-3-11-sat run on local the ``non-sense'' model
+- 2017-3-11-sat run on local the "non-sense" model
 - 2017-3-12-sun run on server by tf for bigger input, and more cases
+- 2017-3-13-mon 1st full pass /w silly cnn, correct z-orientation, store pre-processed files
 
 
 ## Ref
 
-### DL libs:
+### DL libs (biased to py):
 - caffe: 
 http://christopher5106.github.io/deep/learning/2015/09/04/Deep-learning-tutorial-on-Caffe-Technology.html
 http://christopher5106.github.io/big/data/2015/07/16/deep-learning-install-caffe-cudnn-cuda-for-digits-python-on-ubuntu-14-04.html

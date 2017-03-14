@@ -3,12 +3,36 @@
 # version 20170305 by jian: metadata of stage 1 data
 # version 20170309 by jian: deal /w pandas new column, install pydicom on server for user
 # version 20170310 by jian: test on iterating through `all' scans
+# version 20170313 by jian: data check (orientation, spacing, etc)
+
+
+
+
+
+
+
+import os
+import dicom
+image_path = '../input/sample_images/'
+#image_path = '../input/stage1/'
+for pat in os.listdir(image_path):
+	scan = [dicom.read_file(image_path+pat+'/'+f) for f in os.listdir(image_path+pat)]
+	S=len(scan)
+	Thickness =  (scan[0].ImagePositionPatient[2] - scan[S-1].ImagePositionPatient[2])/(S-1)
+	print pat,Thickness
+	
+quit()
+
+
+
+
+
+
+
 
 # case check per Liz
 #case ='../tmp/af2b9f7d489ffab8e3590658853cacf8/'
 case ='../input/sample_images/0a099f2549429d29b32f349e95fb2244/'
-import dicom
-import os
 case_slices=[dicom.read_file(case+f) for f in os.listdir(case)]
 case_slices.sort(key=lambda x:x.InstanceNumber)
 prev_pos,prev_loc=0,0

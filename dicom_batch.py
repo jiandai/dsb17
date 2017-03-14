@@ -1,11 +1,12 @@
 '''
 '''
-def get_one_scan(path):
+def get_one_scan(path,resampling=True):
 	import os
 	import dicom
 	import numpy
 	slices = [ dicom.read_file(path+'/'+s) for s in os.listdir(path) ]
-	slices.sort(key=lambda x:x.InstanceNumber) 
+	#slices.sort(key=lambda x:x.InstanceNumber) 
+	slices.sort(key=lambda x:x.ImagePositionPatient[2]) 
 
 	'''
 	for slice in slices:
@@ -45,7 +46,7 @@ def get_one_scan(path):
 	
 	# Compute the average z-spacing
 	S = len(slices)
-	SliceThickness = (slices[0].SliceLocation - slices[S-1].SliceLocation)/(S-1) # assume n>1
+	#SliceThickness = (slices[0].SliceLocation - slices[S-1].SliceLocation)/(S-1) # assume n>1
 
 	# Convert to Hounsfield units (HU)
 	for s in range(S):
@@ -60,6 +61,8 @@ def get_one_scan(path):
 		voxels[s]+= numpy.int16(intercept)
 
 	voxels = numpy.array(voxels, dtype=numpy.int16) 
+	if resampling:
+		voxels = resampling_one(slices,voxels,new_spacing=[1,1,1])
 	return voxels # return a 3-d numpy array
 
 def get_all_scans(path):
@@ -81,20 +84,39 @@ def get_all_scans(path):
 		all_3d_volumes = all_3d_volumes + [voxels]
 	return (patients,all_scans,all_3d_volumes)
 
+
+
+
+def resampling_one(scan,volume,new_spacing=[1,1,1]):
+	S = len(scan)
+	SliceThickness = (scan[0].ImagePositionPatient[2] - scan[S-1].ImagePositionPatient[2])/(S-1) # assume n>1
+
+	if SliceThickness<0:
+		# reverse the order of voxels and slices
+		volume=volume[::-1,:,:]
+		SliceThickness = - SliceThickness
+
+	import numpy
+	# If assume SliceThickness is defined per slice
+	#spacing = numpy.array([scan[0].SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
+	spacing = numpy.array([SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
+	old_shape = volume.shape
+	reshape_factor = numpy.round(spacing/new_spacing * old_shape)/old_shape
+	new_shape = reshape_factor * old_shape
+	new_spacing = spacing / reshape_factor
+	import scipy.ndimage
+	return scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest')
+
+
 def resampling(scans,volumes,new_spacing=[1,1,1]):
 	resampled_volumes = []
 	for p in range(len(scans)):
-		scan = scans[p]
-		volume = volumes[p]
-		old_shape = volume.shape
-		import numpy
-		spacing = numpy.array([scan[0].SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
-		reshape_factor = numpy.round(spacing/new_spacing * old_shape)/old_shape
-		new_shape = reshape_factor * old_shape
-		new_spacing = spacing / reshape_factor
-		import scipy.ndimage
-		resampled_volumes.append(scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest'))
+		resampled_volumes.append( resampling_one(scan=scans[p],volume=volumes[p],new_spacing=new_spacing) )
+
 	return resampled_volumes
+
+
+
 
 
 def normalize(image):
