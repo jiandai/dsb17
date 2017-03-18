@@ -1,3 +1,10 @@
+##Summary
+
+- preprocessing bottleneck : solved by LSF array 
+- in-memory bottleneck : solved by refactoring the code / optimizing the loop
+- cnn size bottleneck
+- algorithm bottleneck : SME input (?) by using segmentation
+
 ##Development Diary 
 - 2017-1-13-fri set the repo ~ 12:32:17 PM
 - 2017-1-26-thu 1st DL meeting /w Liz & Thomas
@@ -10,7 +17,7 @@
 - 2017-2-18-sat py packing, OO paradigm
 - ... ...
 - 2017-2-19-sun cuda, and R-cuda interface
-- 2017-2-20-mon Unlearn stat :) so funny, presidents day
+- 2017-2-20-mon Unlearn stat :) so funny, presidents day, joint meeting /w CIG meet
 - 2017-2-21-tue Dahshu conf, Thomas asked to focus on DSB17 data, image pipeline
 - 2017-2-22-wed note DL grp meeting: imageJ/nifity/osirix, start to work on dicom metadata ref on pydicom: http://pydicom.readthedocs.io/en/stable/getting_started.html
 - 2017-2-23-thu dicom metadata, patient level vs slice level
@@ -32,9 +39,16 @@
 - 2017-3-10-fri test lsf array for paralle batches
 - ... ...
 - 2017-3-11-sat run on local the "non-sense" model
-- 2017-3-12-sun run on server by tf for bigger input, and more cases
-- 2017-3-13-mon 1st full pass /w silly cnn, correct z-orientation, store pre-processed files
-- 2017-3-14-tue LSF array for paralle batch to pre-process tr and test sets
+- 2017-3-12-sun run on server by tf /w more cases, more epoches, and bigger shape, possibly OOM
+- 2017-3-13-mon 1st full pass /w silly cnn (66547: 8105.94 sec), correct z-orientation, pre-process all in a batch (67455: 27662.58 sec)
+- 2017-3-14-tue LSF array for paralle batch to pre-process tr and test sets, rerun non-sense cnn (95153: 21780.88 sec, 96504: 21772.38 sec)
+- 2017-3-15-wed apparently to load mini batches is more time consuming than to load a single npz file, test on this claim, 1 more pass /w single batch (101193: 21520.19 sec)
+- 2017-3-16-thu spotted a bug in resizing, 128*490*490 drives OOM, 1 pass, test diff shape to maximize the use GPU mem, multi-core not really help
+- 2017-3-17-fri mem bottleneck when cnn shape is enlarged /w all samples, able to run on smp node but not gpu node, review the code structure (loop,loop, model), refactoring
+
+
+## To-do:
+- experiment log
 
 
 ## Ref
