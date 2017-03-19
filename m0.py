@@ -12,6 +12,7 @@ ver 60170314 by jian: test to read mini batch npz files
 ver 60170315 by jian: compare mini batch loading vs single loading, compare mini back loading training vs single loading training
 ver 60170316 by jian: maximize the training shape by pushing the limit of gpu mem
 ver 60170317 by jian: encounter mem bottleneck due to sequential objects, refator the prep to shrink mem footprint
+ver 60170318 by jian: the training of large cnn takes much longer, review CNN math base
 
 to-do: 
 => multi-gpu training via tf
