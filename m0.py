@@ -1,4 +1,5 @@
 '''
+
 Naive or even ``non-sense'' CNN
 
 ver 60170311 by jian: ref to https://www.kaggle.com/mumech/data-science-bowl-6017/loading-and-processing-the-sample-images 
@@ -7,81 +8,170 @@ ver 60170313.1 by jian: 1st pass of all cases
 ver 60170313.2 by jian: consolidate preproc, check the xy-size, orientation
 ver 60170313.3 by jian: resample and save to npz
 ver 60170313.4 by jian: split the script
+ver 60170314 by jian: test to read mini batch npz files
+ver 60170315 by jian: compare mini batch loading vs single loading, compare mini back loading training vs single loading training
+ver 60170316 by jian: maximize the training shape by pushing the limit of gpu mem
+ver 60170317 by jian: encounter mem bottleneck due to sequential objects, refator the prep to shrink mem footprint
+ver 60170318 by jian: the training of large cnn takes much longer, review CNN math base
 
 to-do: 
-=> use multiple batches of pre-proced data
-=> use a test training shape to have a pass
-=> optimize the training shape
+=> multi-gpu training via tf
+*=> use joblib of py
+=> add CV / model selection
+=> save trained model
 => add prediction
+
 
 '''
 
 
+import numpy as np
 import pandas as pd
-labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 
-#tr_meta = pd.read_csv('preproc-log.csv')
+
+#tr_meta = pd.read_csv('../process/prep-out/preproc-log.csv')
 #print tr_meta.sz.min(),tr_meta.sz.max()
 #print tr_meta.sx.min(),tr_meta.sx.max()
 #print tr_meta.sy.min(),tr_meta.sy.max()
+
 '''
+min, max range of resampled scans:
 142 428 for z
 250 490 for x
 250 490 for y
 '''
 
-import numpy as np
-npz_path = '../process/prep-out/resampled-out.npz'
-pre_processed=np.load(npz_path) # of type <class 'numpy.lib.npyio.NpzFile'>
-
-#print pre_processed # <numpy.lib.npyio.NpzFile object at 0x2aad88fd1a90>
-#print pre_processed.keys() # ['arr_0']
-#print(pre_processed['arr_0'].shape) # (3,)
-#print(type(pre_processed['arr_0'][0])) #<type 'numpy.ndarray'>
-
-# pre_processed by itself cannot be iterated
 
 
-#N_EPOCH=10
-N_EPOCH=1
+
+
+
+
+######################################################################################
+
+# Single batch load: 
+'''
+test job 99793
+Started at Wed Mar 15 12:46:35 2017
+Results reported on Wed Mar 15 13:04:30 2017
+~18 min
+780.78 sec cpu time  < physical time
+/w m0.b configuration
+'''
+#npz_path = '../process/prep-out/resampled-out.npz'
+#batch=np.load(npz_path) # of type <class 'numpy.lib.npyio.NpzFile'>
+#pre_processed=list(batch['arr_0'])
+#N=1500
 #N=20
-N=1500
 
-Z_RESIZE=128
-X_RESIZE = 128
-Y_RESIZE = 128
-train_features = np.zeros([len(pre_processed['arr_0']), 1, Z_RESIZE, X_RESIZE, Y_RESIZE], np.float16)
-for i,img in enumerate(pre_processed['arr_0'][:N]):
-        print i,img.shape
+######################################################################################
 
-	'''
-	if img.shape[0]>=Z_RESIZE:
-		# cut extra
-		img = img[(img.shape[0]-Z_RESIZE)//2:(img.shape[0]-Z_RESIZE)//2 + Z_RESIZE]
+
+# Mulpi-batch load:
+'''
+test job 100002
+Started at Wed Mar 15 13:09:41 2017
+Results reported on Wed Mar 15 13:26:48 2017
+~17 min
+773.01 sec cpu time 
+/w m0.b
+'''
+
+
+BATCH_SIZE=35 # for training batch
+#S=2 # number of batches to be used, max=40
+S=40 # number of batches to be used, max=40
+N=BATCH_SIZE * S 
+
+'''
+128*490*490 OOM
+128*280*280 OOM
+256*256*256 OOM
+200*256*256 OOM
+160*256*256 OOM
+
+206304: 128*300*300 OOM
+287050,289839: 128*300*300 ok /w K80
+290200: 128*320^2 ok /w K80
+289655,289816: 128*360*360 OOM
+290606: 160*320*320 OOM
+290746: 160*300*300 ok
+'''
+Z_RESIZE=160
+N_XY=300
+X_RESIZE = N_XY
+Y_RESIZE = N_XY
+
+#pre_processed = []
+
+for j in range(1,41)[:S]:
+	npz_path = '../process/prep-out/training/preproc-training-set-batch-'+str(j)+'.npz'
+	#batch=np.load(npz_path) # of type <class 'numpy.lib.npyio.NpzFile'>
+	#pre_processed=pre_processed + list(batch['arr_0'])
+	pre_processed=list(np.load(npz_path) ['arr_0'])
+	train_features_b = np.zeros([len(pre_processed), 1, Z_RESIZE, X_RESIZE, Y_RESIZE], np.float16)
+
+
+	for i,img in enumerate(pre_processed):
+	        print i,img.shape
+	
+		if img.shape[0]>=Z_RESIZE:
+			# cut extra
+			img = img[(img.shape[0]-Z_RESIZE)//2:(img.shape[0]-Z_RESIZE)//2 + Z_RESIZE]
+		else:
+			# padding on above and below
+			img = np.concatenate([
+				np.zeros([(Z_RESIZE- img.shape[0])//2, img.shape[1], img.shape[2]], np.float16),
+				img, 
+				np.zeros([Z_RESIZE- img.shape[0]-(Z_RESIZE- img.shape[0])//2, img.shape[1], img.shape[2]], np.float16) ],axis=0)
+	        #print '-',img.shape
+		if img.shape[1]>=X_RESIZE:
+			# cut extra
+			img = img[:,(img.shape[1]-X_RESIZE)//2:(img.shape[1]-X_RESIZE)//2 + X_RESIZE,:]
+		else:
+			# padding on above and below
+			pad0 = np.zeros([Z_RESIZE,(X_RESIZE- img.shape[1])//2, img.shape[2]], np.float16)
+			pad1 = np.zeros([Z_RESIZE,X_RESIZE- img.shape[1]-(X_RESIZE- img.shape[1])//2, img.shape[2]], np.float16)
+			img = np.concatenate([
+				pad0,
+				img, 
+				pad1],axis=1)
+	        #print '-',img.shape
+		if img.shape[2]>=Y_RESIZE:
+			# cut extra
+			img = img[:,:,(img.shape[2]-Y_RESIZE)//2:(img.shape[2]-Y_RESIZE)//2 + Y_RESIZE]
+		else:
+			# padding on above and below
+			img = np.concatenate([
+				np.zeros([Z_RESIZE,X_RESIZE,(Y_RESIZE- img.shape[2])//2], np.float16),
+				img, 
+				np.zeros([Z_RESIZE,X_RESIZE,Y_RESIZE- img.shape[2]-(Y_RESIZE- img.shape[2])//2], np.float16) ],axis=2)
+	
+	        #print '-',img.shape
+		train_features_b[i] = img.reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
+
+
+
+	print (train_features_b.shape)
+	if j==1:
+		train_features = train_features_b
 	else:
-		# padding on above and below
-		img = np.concatenate([
-			np.zeros([(Z_RESIZE- img.shape[0])//2, RESIZE, RESIZE], np.float16),
-			img, 
-			np.zeros([Z_RESIZE- img.shape[0]-(Z_RESIZE- img.shape[0])//2, RESIZE, RESIZE], np.float16) ])
-		img = img.reshape(1,Z_RESIZE,RESIZE,RESIZE)
-	'''
-	# in this test, no need to pad 
-	img = img[(img.shape[0]-Z_RESIZE)//2:(img.shape[0]-Z_RESIZE)//2 + Z_RESIZE]
-	img = img[:,(img.shape[0]-X_RESIZE)//2:(img.shape[0]-X_RESIZE)//2 + X_RESIZE,:]
-	img = img[:,:,(img.shape[0]-Y_RESIZE)//2:(img.shape[0]-Y_RESIZE)//2 + Y_RESIZE]
-
-	train_features[i] = img.reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
-
-
+		train_features = np.concatenate([train_features,train_features_b])
 
 print (train_features.shape)
 
 
 
 
-# `` non-sense '' CNN
+
+
+
+
+######################################################################################
+
+
 import keras
+# `` non-sense '' CNN
 input_shape=train_features.shape[1:]
 nn = keras.models.Sequential([
 keras.layers.convolutional.Convolution3D(32, 3, 3, 3, border_mode='same', activation='relu', input_shape=input_shape, dim_ordering='th'),
@@ -106,8 +196,12 @@ print(nn.summary())
 
 
 
+######################################################################################
 
+N_EPOCH=10
+#N_EPOCH=1
 
+labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 train_labels = labels_csv.iloc[:N,:].values
 nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoch=N_EPOCH)
 # => add prediction protion here

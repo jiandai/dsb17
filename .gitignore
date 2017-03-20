@@ -11,3 +11,5 @@ log/
 log/*
 *.b
 tst.py
+obs
+obs/*
