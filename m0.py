@@ -13,6 +13,7 @@ ver 60170315 by jian: compare mini batch loading vs single loading, compare mini
 ver 60170316 by jian: maximize the training shape by pushing the limit of gpu mem
 ver 60170317 by jian: encounter mem bottleneck due to sequential objects, refator the prep to shrink mem footprint
 ver 60170318 by jian: the training of large cnn takes much longer, review CNN math base
+ver 60170320 by jian: use 2.5 mm resolution for a test
 
 to-do: 
 => multi-gpu training via tf
@@ -24,9 +25,28 @@ to-do:
 
 '''
 
+import pandas as pd
+
+#import glob
+#sz_min,sz_max,sx_min,sx_max,sy_min,sy_max = 10000,0,10000,0,10000,0
+#for f in glob.glob('preproc-training-set-batch*'):
+#	tr_meta = pd.read_csv(f)
+#	sz_min = min(sz_min,tr_meta.sz.min())
+#	sz_max = max(sz_max,tr_meta.sz.max())
+#	sx_min = min(sx_min,tr_meta.sx.min())
+#	sx_max = max(sx_max,tr_meta.sx.max())
+#	sy_min = min(sy_min,tr_meta.sy.min())
+#	sy_max = max(sy_max,tr_meta.sy.max())
+#print sz_min,sz_max
+#print sx_min,sx_max
+#print sy_min,sy_max
+'''
+57 171
+100 196
+100 196
+'''
 
 import numpy as np
-import pandas as pd
 
 
 #tr_meta = pd.read_csv('../process/prep-out/preproc-log.csv')
@@ -97,8 +117,10 @@ N=BATCH_SIZE * S
 290606: 160*320*320 OOM
 290746: 160*300*300 ok
 '''
-Z_RESIZE=160
-N_XY=300
+#Z_RESIZE=160
+Z_RESIZE=171
+#N_XY=300
+N_XY=196
 X_RESIZE = N_XY
 Y_RESIZE = N_XY
 

@@ -10,6 +10,7 @@ ver 60170313.4 by jian: split the script, and this portion becomes "m0-preproc.p
 ver 60170314.1 by jian: test save individual npz /w test set
 ver 60170314.2 by jian: test save batch by using LSF array /w test set
 ver 60170314.2 by jian: save batch by using LSF array /w tr set
+ver 60170320 by jian: allow diff pixel spacing when resampling
 
 '''
 import sys
@@ -23,7 +24,8 @@ batch_range = range((BATCH_INDEX-1)*BATCH_SIZE,BATCH_INDEX*BATCH_SIZE)
 batch_start = (BATCH_INDEX-1)*BATCH_SIZE
 batch_end = BATCH_INDEX*BATCH_SIZE
 
-
+#PIXEL_SPACING=1
+PIXEL_SPACING=2.5
 
 #N=1500 # more than the number of cases
 
@@ -51,7 +53,7 @@ images_path = '../input/stage1/'
 #output_path = '../process/prep-out/test/'
 output_path = '../process/prep-out/training/'
 for i,pat in enumerate(patients):
-	img = get_one_scan(images_path+pat,resampling=True)
+	img = get_one_scan(images_path+pat,resampling=True,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
 	log.append([i,pat,img.shape[0],img.shape[1],img.shape[2]])
 	vox_list.append(img)
 	# indiviudal scan saving
@@ -67,7 +69,7 @@ print logDF
 logDF.to_csv("preproc-training-set-batch-"+sys.argv[1]+"-log.csv")
 #logDF.to_csv("preproc-log.csv")
 #npz_file = "preproc-test-set-batch-"+sys.argv[1]+".npz"
-npz_file = "preproc-training-set-batch-"+sys.argv[1]+".npz"
+npz_file = "preproc-training-set-res-"+str(PIXEL_SPACING)+"-batch-"+sys.argv[1]+".npz"
 print npz_file
 npz_path = output_path + npz_file
 np.savez_compressed(npz_path,vox_list)

@@ -1,3 +1,4 @@
+
 ##Summary
 
 - preprocessing bottleneck (time consuming) : solved by LSF array (simple, 3/14)
@@ -6,6 +7,7 @@
 - algorithm bottleneck : SME input (?) by using segmentation
 
 ##Development Diary 
+
 - ... ... 
 - 2017-1-13-fri set the repo ~ 12:32:17 PM
 - 2017-1-20-fri company ML meeting...
@@ -17,7 +19,7 @@
 - 2017-2-15-wed present in 1st DL grp meeting, some quick benchmark on gpu vs cpu
 - 2017-2-17-fri wrap up py2oracle
 - 2017-2-18-sat py packing, OO paradigm
-- ... ... w(-1)
+- ... ... w0
 - 2017-2-19-sun cuda, and R-cuda interface
 - 2017-2-20-mon Unlearn stat :) so funny, presidents day, joint meeting /w CIG 
 - 2017-2-21-tue Dahshu conf, Thomas asked to focus on DSB17 data, image pipeline
@@ -25,21 +27,21 @@
 - 2017-2-23-thu dicom metadata, patient level vs slice level
 - 2017-2-24-fri dicom pixel data, dicom geometry
 - 2017-2-25-sat conversion, resampling and normalization 
-- ... ... w0
+- ... ... w1
 - 2017-2-26-sun check training and test sets
 - 2017-2-27-mon separate training from test
 - 2017-2-28-tue resolve the storage issue by using workspace on server, download data to server per wget + cookies file => review the time line
 - 2017-3-1-wed no DL grp meeting, extract the data by 7z, more data from kaggle, revamp MNIST test case on server
 - 2017-3-2-thu start to use kernel feature of kaggle /w MNIST
 - 2017-3-3-fri ML methodology review: CV, etc
-- ... ... w1
+- ... ... w2
 - 2017-3-5-sun reading on 3d ct data processing
 - 2017-3-6-mon work on the nonsense/idiotic/naive baseline, and tensorflow installation, use new server to run tensorflow
 - 2017-3-7-tue reading preprocess and segmentation, kernel test
 - 2017-3-8-wed 3rd DL meeting, update doc /w Proj charter, theano broken on "new server"
 - 2017-3-9-thu LSF array, install pydicom on server
 - 2017-3-10-fri test lsf array for paralle batches
-- ... ... w2
+- ... ... w3
 - 2017-3-11-sat run on local the "non-sense" model
 - 2017-3-12-sun run on server by tf /w more cases, more epoches, and bigger shape, possibly OOM
 - 2017-3-13-mon 1st full pass /w silly cnn (66547: 8105.94 sec), correct z-orientation, pre-process all in a batch (67455: 27662.58 sec)
@@ -48,15 +50,14 @@
 - 2017-3-16-thu spotted a bug in resizing, 128*490*490 drives OOM, 1 pass, test diff shape to maximize the use GPU mem, multi-core not really help
 - 2017-3-17-fri mem bottleneck when cnn shape is enlarged /w all samples, able to run on smp node but not gpu node, review the code structure (loop,loop, model), refactoring, start 1-pass /w larger cnn & all samples
 
-#### staged summary: i) Being able to put all the training scans through a 3d cnn smoothly and in a well controled way is a quite non-trivial task;
-ii) The 3d cnn is not an efficient tool for the diagnosis of lung cancer using ct data
+#### staged summary: i) Being able to put all the training scans through a 3d cnn smoothly and in a well controled way is a quite non-trivial task; ii) The 3d cnn is not an efficient tool for the diagnosis of lung cancer using ct data
 
-- ... ... w3
+- ... ... w4
 - 2017-3-20-mon segmentation 101
 
 ## To-do:
 - experiment log
-
+- cnn ae: search for "convolutional autoencoder"
 
 ## Ref
 

@@ -1,6 +1,6 @@
 '''
 '''
-def get_one_scan(path,resampling=True):
+def get_one_scan(path,resampling=True,new_spacing=[1,1,1]):
 	import os
 	import dicom
 	import numpy
@@ -62,7 +62,7 @@ def get_one_scan(path,resampling=True):
 
 	voxels = numpy.array(voxels, dtype=numpy.int16) 
 	if resampling:
-		voxels = resampling_one(slices,voxels,new_spacing=[1,1,1])
+		voxels = resampling_one(slices,voxels,new_spacing=new_spacing)
 	return voxels # return a 3-d numpy array
 
 def get_all_scans(path):
