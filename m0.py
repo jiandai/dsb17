@@ -126,8 +126,11 @@ Y_RESIZE = N_XY
 
 #pre_processed = []
 
+
+#tr_prefix = '../process/prep-out/training/preproc-training-set-batch-'
+tr_prefix = '../process/prep-out/training/preproc-training-set-res-2.5-batch-'
 for j in range(1,41)[:S]:
-	npz_path = '../process/prep-out/training/preproc-training-set-batch-'+str(j)+'.npz'
+	npz_path = tr_prefix+str(j)+'.npz'
 	#batch=np.load(npz_path) # of type <class 'numpy.lib.npyio.NpzFile'>
 	#pre_processed=pre_processed + list(batch['arr_0'])
 	pre_processed=list(np.load(npz_path) ['arr_0'])
