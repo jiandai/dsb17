@@ -14,8 +14,10 @@ ver 60170316 by jian: maximize the training shape by pushing the limit of gpu me
 ver 60170317 by jian: encounter mem bottleneck due to sequential objects, refator the prep to shrink mem footprint
 ver 60170318 by jian: the training of large cnn takes much longer, review CNN math base
 ver 60170320 by jian: use 2.5 mm resolution for a test
+ver 60170322 by jian: add normalization
 
 to-do: 
+=> add dropout layer
 => multi-gpu training via tf
 *=> use joblib of py
 => add CV / model selection
@@ -124,6 +126,7 @@ N_XY=196
 X_RESIZE = N_XY
 Y_RESIZE = N_XY
 
+from dicom_batch import normalize
 #pre_processed = []
 
 
@@ -173,7 +176,7 @@ for j in range(1,41)[:S]:
 				np.zeros([Z_RESIZE,X_RESIZE,Y_RESIZE- img.shape[2]-(Y_RESIZE- img.shape[2])//2], np.float16) ],axis=2)
 	
 	        #print '-',img.shape
-		train_features_b[i] = img.reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
+		train_features_b[i] = normalize(img).reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
 
 
 

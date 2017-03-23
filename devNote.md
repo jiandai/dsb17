@@ -48,14 +48,18 @@
 - 2017-3-14-tue LSF array for paralle batch to pre-process tr and test sets, rerun non-sense cnn (95153: 21780.88 sec, 96504: 21772.38 sec)
 - 2017-3-15-wed apparently to load mini batches is more time consuming than to load a single npz file, test on this claim, 1 more pass /w single batch (101193: 21520.19 sec), 4th DL grp meeting, Priya joined, Thomas absent
 - 2017-3-16-thu spotted a bug in resizing, 128*490*490 drives OOM, 1 pass, test diff shape to maximize the use GPU mem, multi-core not really help
-- 2017-3-17-fri mem bottleneck when cnn shape is enlarged /w all samples, able to run on smp node but not gpu node, review the code structure (loop,loop, model), refactoring, start 1-pass /w larger cnn & all samples
+- 2017-3-17-fri mem bottleneck when cnn shape is enlarged /w all samples, able to run on smp node but not gpu node, review the code structure (loop,loop, model), refactoring, start 1st dry-run /w larger cnn & all samples
 
 #### staged summary: i) Being able to put all the training scans through a 3d cnn smoothly and in a well controled way is a quite non-trivial task; ii) The 3d cnn is not an efficient tool for the diagnosis of lung cancer using ct data
 
 - ... ... w4
 - 2017-3-20-mon segmentation 101
+- 2017-3-21-tue 2.5-mm resolution dry-run result out
+- 2017-3-22-wed 5th DL meeting /w bigger team, clone official tutorial, met /w cleo`s team, sample test using pretrained unet without ROI, 3d cnn add normalization
 
 ## To-do:
+- add more preproc in m0
+- add ROI /w pretrained unet
 - experiment log
 - cnn ae: search for "convolutional autoencoder"
 
