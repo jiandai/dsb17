@@ -101,8 +101,9 @@ Results reported on Wed Mar 15 13:26:48 2017
 
 
 BATCH_SIZE=35 # for training batch
-S=2 # number of batches to be used, max=40
-#S=40 # number of batches to be used, max=40
+# number of batches to be used, max=40
+#S=1 
+S=40
 N=BATCH_SIZE * S 
 
 '''
@@ -226,14 +227,18 @@ print(nn.summary())
 
 ######################################################################################
 
-#N_EPOCH=10
-N_EPOCH=1
+N_EPOCH=10
+#N_EPOCH=1
 
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 train_labels = labels_csv.iloc[:N,:].values
 nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoch=N_EPOCH)
-# prediction
-predict = nn.predict(train_features)
-print type(predict)
-print predict
 
+# prediction
+n = train_features.shape[0]
+predicted = np.zeros([n,1])
+for j in range(n):
+	predict = nn.predict(train_features[j].reshape(1,1,171, 196, 196))
+	predicted[j] = predict[0]
+
+print predicted
