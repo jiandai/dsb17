@@ -15,6 +15,7 @@ ver 60170317 by jian: encounter mem bottleneck due to sequential objects, refato
 ver 60170318 by jian: the training of large cnn takes much longer, review CNN math base
 ver 60170320 by jian: use 2.5 mm resolution for a test
 ver 60170322 by jian: add normalization
+ver 60170323 by jian: add prediction
 
 to-do: 
 => add dropout layer
@@ -22,7 +23,6 @@ to-do:
 *=> use joblib of py
 => add CV / model selection
 => save trained model
-=> add prediction
 
 
 '''
@@ -101,8 +101,8 @@ Results reported on Wed Mar 15 13:26:48 2017
 
 
 BATCH_SIZE=35 # for training batch
-#S=2 # number of batches to be used, max=40
-S=40 # number of batches to be used, max=40
+S=2 # number of batches to be used, max=40
+#S=40 # number of batches to be used, max=40
 N=BATCH_SIZE * S 
 
 '''
@@ -226,20 +226,14 @@ print(nn.summary())
 
 ######################################################################################
 
-N_EPOCH=10
-#N_EPOCH=1
+#N_EPOCH=10
+N_EPOCH=1
 
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 train_labels = labels_csv.iloc[:N,:].values
 nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoch=N_EPOCH)
-# => add prediction protion here
+# prediction
+predict = nn.predict(train_features)
+print type(predict)
+print predict
 
-'''
-first pass on local:
-C:\Anaconda3\lib\site-packages\scipy\ndimage\interpolation.py:568: UserWarning: From scipy 0.13.0, the output shape of zoom() is calculated with round() instead of int() - for these inputs the size of the returned array has changed. "the returned array has changed.", UserWarning)
-(20, 1, 128, 128, 128)
-Using TensorFlow backend.
-Train on 18 samples, validate on 2 samples
-Epoch 1/1
-18/18 [==============================] - 4869s - loss: 0.6869 - acc: 0.7222 - val_loss: 7.5440 - val_acc: 0.0000e+00
-'''
