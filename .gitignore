@@ -6,15 +6,13 @@
 *.xlsx
 *.xls
 *.npz
+*.npy
 *.local
 log
 log/*
 *.b
-tst.py
 obs
 obs/*
-test
-test/*
 devNote.md
 *.pyc
 __pycache__
