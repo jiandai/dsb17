@@ -17,11 +17,10 @@ to-do:
 '''
 
 def segment_ROI(img):
-	import numpy as np
 	from skimage import morphology
 	from skimage import measure
 	from skimage.transform import resize
-	from sklearn.cluster import KMeans
+	from sklearn.cluster import KMeans; import numpy as np
 	
 	#Standardize the pixel values
 	mean = np.mean(img)
