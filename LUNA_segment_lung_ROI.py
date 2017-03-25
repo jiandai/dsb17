@@ -153,7 +153,7 @@ def segment_ROI(img):
 def debugPlot(x):
 	import matplotlib.pyplot as plt
 	fig, ax = plt.subplots()
-	cax=ax.imshow(x)
+	cax=ax.imshow(x,cmap='gray')
 	cbar = fig.colorbar(cax)
 	plt.show()
 
