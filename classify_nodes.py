@@ -63,15 +63,16 @@ def getRegionMetricRow(seg):
             weightedX += region.centroid[0]*region.area
             weightedY += region.centroid[1]*region.area
             numNodes += 1
-            
-    weightedX = weightedX / totalArea 
-    weightedY = weightedY / totalArea
-    avgArea = totalArea / numNodes
-    avgEcc = avgEcc / numNodes
-    avgEquivlentDiameter = avgEquivlentDiameter / numNodes
-    stdEquivlentDiameter = np.std(eqDiameters)
-    
-    maxArea = max(areas)
+    if totalArea>0:
+        weightedX = weightedX / totalArea 
+        weightedY = weightedY / totalArea
+    if numNodes>0:
+        avgArea = totalArea / numNodes
+        avgEcc = avgEcc / numNodes
+        avgEquivlentDiameter = avgEquivlentDiameter / numNodes
+        stdEquivlentDiameter = np.std(eqDiameters)
+    if len(areas)>0: 
+        maxArea = max(areas)
     
     
     numNodesperSlice = numNodes*1. / nslices

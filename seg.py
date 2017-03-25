@@ -96,6 +96,7 @@ from dicom_batch import get_one_scan
 import pandas as pd
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 batch_start=0
+#batch_start=570 # data issue /w 571-th
 batch_end=2000
 patients = labels_csv.index[batch_start:batch_end]
 truth_metric = labels_csv.cancer[batch_start:batch_end]
@@ -106,6 +107,7 @@ images_path = '../input/stage1/'
 numfeatures = 9
 feature_array = np.zeros((len(patients),numfeatures))
 for i,pat in enumerate(patients):
+	print i,pat
         scan = get_one_scan(images_path+pat,resampling=False)
 	segs=np.zeros([4,1,512,512])
 	for j in range(scan.shape[0])[:4]:
@@ -115,5 +117,5 @@ for i,pat in enumerate(patients):
 			segs[j] = model.predict(img) [0] # please review this part
 	feature_array[i] = getRegionMetricRow(segs)
 
-
+print 'preprocessing and segmentation finished'
 classifyData(feature_array,truth_metric)
