@@ -99,7 +99,7 @@ labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 batch_start=0
 #batch_start=570 # data issue /w 571-th
 #batch_end=2000
-batch_end=2
+batch_end=100
 patients = labels_csv.index[batch_start:batch_end]
 truth_metric = labels_csv.cancer[batch_start:batch_end]
 
