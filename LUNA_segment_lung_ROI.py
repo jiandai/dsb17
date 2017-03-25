@@ -137,9 +137,9 @@ def segment_ROI(img):
 	#debugPlot(img)
 	mask =  mask[min_row:max_row,min_col:max_col]
 	if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
-            #pass
+	    #pass
 	    new_img=None
-        else:
+	else:
             # moving range to -1 to 1 to accomodate the resize function
             mean = np.mean(img)
             img = img - mean
