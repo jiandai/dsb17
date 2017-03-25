@@ -1,7 +1,10 @@
 '''
 ref https://www.kaggle.com/c/data-science-bowl-2017#tutorial
 ver 20170322 by jian: test on without ROI
+ver 20170323 by jian: clone the tutorial github repos
+ver 20170324 by jian: merge tutorial py script together
 '''
+
 
 import numpy as np
 
@@ -12,14 +15,15 @@ from keras.optimizers import Adam
 #from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
 
-working_path = '../input/sample_images/0acbebb8d463b4b9ca88cf38431aac69/'
 
 K.set_image_dim_ordering('th')  # Theano dimension ordering in this code
 
+
+
 img_rows = 512
 img_cols = 512
-
 smooth = 1.
+
 
 
 
@@ -86,24 +90,30 @@ def get_unet():
 model = get_unet()
 model.load_weights('../DSB3Tutorial/unet.hdf5')
 
-import dicom
-import os
-slices = [dicom.read_file(working_path+f) for f in os.listdir(working_path)]
-slices.sort(key=lambda x:x.ImagePositionPatient[2])
-imgs = np.stack([s.pixel_array.reshape(1,512,512).astype(np.float32) for s in slices])
+from LUNA_segment_lung_ROI import segment_ROI,debugPlot
+from dicom_batch import get_one_scan
+
+import pandas as pd
+labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
+batch_start=0
+batch_end=2000
+patients = labels_csv.index[batch_start:batch_end]
+truth_metric = labels_csv.cancer[batch_start:batch_end]
 
 
-print imgs.shape
-out = model.predict(imgs[100:105])
-print type(out)
-print out.shape
+from classify_nodes import getRegionMetricRow,getRegionFromMap,logloss,classifyData
+images_path = '../input/stage1/'
+numfeatures = 9
+feature_array = np.zeros((len(patients),numfeatures))
+for i,pat in enumerate(patients):
+        scan = get_one_scan(images_path+pat,resampling=False)
+	segs=np.zeros([4,1,512,512])
+	for j in range(scan.shape[0])[:4]:
+		img = segment_ROI(scan[j])
+		if not img is None:
+			img = img.reshape(1,1,512,512).astype(np.float32)
+			segs[j] = model.predict(img) [0] # please review this part
+	feature_array[i] = getRegionMetricRow(segs)
 
-np.save("test/test-img.npy", imgs)
-np.save("test/test-seg.npy", out)
 
-# To plot in a diff test
-#import matplotlib.pyplot as plt
-#plt.imshow(imgs[0,0,:,:])
-#plt.show()
-#plt.imshow(out[0,0,:,:])
-#plt.show()
+classifyData(feature_array,truth_metric)

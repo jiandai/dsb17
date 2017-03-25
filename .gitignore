@@ -16,3 +16,4 @@ obs/*
 test
 test/*
 devNote.md
+*.pyc
