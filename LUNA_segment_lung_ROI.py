@@ -20,7 +20,8 @@ def segment_ROI(img):
 	from skimage import morphology
 	from skimage import measure
 	from skimage.transform import resize
-	from sklearn.cluster import KMeans; import numpy as np
+	from sklearn.cluster import KMeans
+	import numpy as np
 	
 	#Standardize the pixel values
 	mean = np.mean(img)
@@ -128,14 +129,14 @@ def segment_ROI(img):
 		max_row=min_row+width
 	else:
 		max_col = min_col+height
-        # 
-        # cropping the image down to the bounding box for all regions
-        # (there's probably an skimage command that can do this in one line)
-        # 
-        img = img[min_row:max_row,min_col:max_col] 
-        #debugPlot(img)
-        mask =  mask[min_row:max_row,min_col:max_col]
-        if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
+	# 
+	# cropping the image down to the bounding box for all regions
+	# (there's probably an skimage command that can do this in one line)
+	# 
+	img = img[min_row:max_row,min_col:max_col] 
+	#debugPlot(img)
+	mask =  mask[min_row:max_row,min_col:max_col]
+	if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
             #pass
 	    new_img=None
         else:
@@ -156,6 +157,4 @@ def debugPlot(x):
 	cax=ax.imshow(x)
 	cbar = fig.colorbar(cax)
 	plt.show()
-
-
 
