@@ -17,3 +17,5 @@ test
 test/*
 devNote.md
 *.pyc
+__pycache__
+__pycache__/*
