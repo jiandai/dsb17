@@ -18,6 +18,7 @@ ver 60170322 by jian: add normalization
 ver 60170323 by jian: add prediction
 
 to-do: 
+=> use segmentation in preprocessing
 => add dropout layer
 => multi-gpu training via tf
 *=> use joblib of py
@@ -236,9 +237,9 @@ nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoc
 
 # prediction
 n = train_features.shape[0]
-predicted = np.zeros([n,1])
+#predicted = np.zeros([n,1])
 for j in range(n):
 	predict = nn.predict(train_features[j].reshape(1,1,171, 196, 196))
-	predicted[j] = predict[0]
+	#predicted[j] = predict[0]
+	print j,predict
 
-print predicted

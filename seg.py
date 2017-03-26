@@ -4,6 +4,9 @@ ver 20170322 by jian: test on without ROI
 ver 20170323 by jian: clone the tutorial github repos
 ver 20170324 by jian: merge tutorial py script together
 ver 20170325 by jian: note a bug in dry run
+
+to-do:
+=> what is the outcome from unet
 '''
 
 
@@ -96,33 +99,44 @@ from dicom_batch import get_one_scan
 
 import pandas as pd
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
-batch_start=0
+
+#batch_start=0
+#batch_start=100
+#batch_start=300
+batch_start=500
 #batch_start=570 # data issue /w 571-th
+
+#batch_end=100
+#batch_end=300
+#batch_end=500
+batch_end=700
 #batch_end=2000
-batch_end=100
+
 patients = labels_csv.index[batch_start:batch_end]
 truth_metric = labels_csv.cancer[batch_start:batch_end]
 
 
 from classify_nodes import getRegionMetricRow,getRegionFromMap,logloss,classifyData
 images_path = '../input/stage1/'
+output_path = '../process/tr-in/'
 numfeatures = 9
 feature_array = np.zeros((len(patients),numfeatures))
 for i,pat in enumerate(patients):
 	print i,pat
-        scan = get_one_scan(images_path+pat,resampling=False)
+        scan = get_one_scan(images_path+pat,resampling=False) #s1
         n_slice = scan.shape[0]
 	segs=np.zeros([n_slice,1,512,512])
 	for j in range(n_slice)[:]: # 
-		img = segment_ROI(scan[j])
+		img = segment_ROI(scan[j]) #s2
                 # visual test here
                 #debugPlot(scan[j])
                 #debugPlot(img)
 		if not img is None:
 			img = img.reshape(1,1,512,512).astype(np.float32)
-			segs[j] = model.predict(img) [0] # please review this part
+			segs[j] = model.predict(img) [0] # s3, please review this part
         print(segs.shape)
-	feature_array[i] = getRegionMetricRow(segs)
+	np.save(output_path+pat+'.npy', segs)
+	feature_array[i] = getRegionMetricRow(segs) #s4
 
 print 'preprocessing and segmentation finished'
-classifyData(feature_array,truth_metric)
+classifyData(feature_array,truth_metric) #s5

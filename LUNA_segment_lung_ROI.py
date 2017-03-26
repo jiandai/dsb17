@@ -125,10 +125,11 @@ def segment_ROI(img,to_square=True,resize=True):
 			max_col = B[3]
 	width = max_col-min_col
 	height = max_row - min_row
-	#if width > height:
-	#	max_row=min_row+width
-	#else:
-	#	max_col = min_col+height
+	if to_square:
+		if width > height:
+			max_row=min_row+width
+		else:
+			max_col = min_col+height
 	# 
 	# cropping the image down to the bounding box for all regions
 	# (there's probably an skimage command that can do this in one line)
@@ -145,8 +146,10 @@ def segment_ROI(img,to_square=True,resize=True):
 		min = np.min(img)
 		max = np.max(img)
 		img = img/(max-min)
-		new_img = img
-		#new_img = resize(img,[512,512]) 
+		if resize:
+			new_img = resize(img,[512,512]) 
+		else:
+			new_img = img
 	return new_img
 
 
