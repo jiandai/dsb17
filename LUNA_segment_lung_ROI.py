@@ -10,13 +10,13 @@ hacked ver 20170323 by jian:
 	- merge two loops into one single loop
 	- redefine the output as preprocessed figures
 ver 20170324.1 by jian: use stage1 scan (or the resampled)
-ver 20170324.2 by jian: spin off from the folk, and turn to a function
+ver 20170324.2 by jian: spin off from the folk, and turn to a function / merge steps
+ver 20170325 by jian: tune on whether to make the output a square and to resize to 512^2
 
 to-do: 
-=> merge steps
 '''
 
-def segment_ROI(img):
+def segment_ROI(img,to_square=True,resize=True):
 	from skimage import morphology
 	from skimage import measure
 	from skimage.transform import resize
@@ -125,17 +125,17 @@ def segment_ROI(img):
 			max_col = B[3]
 	width = max_col-min_col
 	height = max_row - min_row
-	if width > height:
-		max_row=min_row+width
-	else:
-		max_col = min_col+height
+	#if width > height:
+	#	max_row=min_row+width
+	#else:
+	#	max_col = min_col+height
 	# 
 	# cropping the image down to the bounding box for all regions
 	# (there's probably an skimage command that can do this in one line)
 	# 
 	img = img[min_row:max_row,min_col:max_col] 
 	#debugPlot(img)
-	mask =  mask[min_row:max_row,min_col:max_col]
+	#mask =  mask[min_row:max_row,min_col:max_col]
 	if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
 		new_img=None
 	else:
@@ -145,7 +145,8 @@ def segment_ROI(img):
 		min = np.min(img)
 		max = np.max(img)
 		img = img/(max-min)
-		new_img = resize(img,[512,512]) 
+		new_img = img
+		#new_img = resize(img,[512,512]) 
 	return new_img
 
 
