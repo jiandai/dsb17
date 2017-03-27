@@ -11,6 +11,7 @@ ver 60170314.1 by jian: test save individual npz /w test set
 ver 60170314.2 by jian: test save batch by using LSF array /w test set
 ver 60170314.2 by jian: save batch by using LSF array /w tr set
 ver 60170320 by jian: allow diff pixel spacing when resampling
+ver 60170327 by jian: add segmentation, read-seg-chop-resample
 
 '''
 import sys
@@ -19,13 +20,14 @@ import sys
 BATCH_INDEX = int(sys.argv[1])
 #BATCH_SIZE =25 # for test set /w 8 batches for 198 records
 BATCH_SIZE = 35 # for training set /w 40 batches for 1397 records
-#BATCH_SIZE =2 
+#BATCH_SIZE =4 
 batch_range = range((BATCH_INDEX-1)*BATCH_SIZE,BATCH_INDEX*BATCH_SIZE)
 batch_start = (BATCH_INDEX-1)*BATCH_SIZE
 batch_end = BATCH_INDEX*BATCH_SIZE
 
-#PIXEL_SPACING=1
-PIXEL_SPACING=2.5
+PIXEL_SPACING=1
+#PIXEL_SPACING=2.5
+#PIXEL_SPACING=1.5
 
 #N=1500 # more than the number of cases
 
@@ -38,40 +40,77 @@ import os
 import numpy as np
 import scipy.ndimage
 import dicom
+import matplotlib.pyplot as plt
 
-
-patients = labels_csv.index[batch_start:batch_end]
+patients = labels_csv.index[batch_start:batch_end][:]
 #patients = test_csv.index[batch_start:batch_end]
+
 print patients
+print batch_start,batch_end
 print batch_range
 print len(patients)
 
-from dicom_batch import get_one_scan
-vox_list=[]
-log=[]
+from dicom_batch import get_one_scan,resampling_one
+from LUNA_segment_lung_ROI import segment_ROI
+#vox_list=[]
+#log=[]
 images_path = '../input/stage1/'
 #output_path = '../process/prep-out/test/'
 output_path = '../process/prep-out/training/'
+#out_file_note = '-simple' # for test
+out_file_note = '-r-s-r' # for read-seg-resample
 for i,pat in enumerate(patients):
-	img = get_one_scan(images_path+pat,resampling=True,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
-	log.append([i,pat,img.shape[0],img.shape[1],img.shape[2]])
-	vox_list.append(img)
+	print i,pat
+	#img = get_one_scan(images_path+pat,resampling=True,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
+	img,spacing = get_one_scan(images_path+pat,resampling=False)
+	print 'original size and spacing:',img.shape, spacing
+	seg_list=[]
+	min_row=[]
+	max_row=[]
+	min_col=[]
+	max_col=[]
+	for j in range(img.shape[0])[:]:
+		seg,box = segment_ROI(img[j],keep_size=True,to_square=False,resizing=False)
+		if seg is not None:
+			seg_list.append(seg)
+			min_row.append(box[0])
+			max_row.append(box[1])
+			min_col.append(box[2])
+			max_col.append(box[3])
+	segs = np.stack(seg_list)
+	overall_min_row = min(min_row)
+	overall_max_row = max(max_row)
+	overall_min_col = min(min_col)
+	overall_max_col = max(max_col)
+	print 'output size:',segs.shape
+	segs = segs[:,overall_min_row:overall_max_row,overall_min_col:overall_max_col]
+	print 'chopped size:',segs.shape
+
+	segs = resampling_one(segs,spacing,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
+	print 'resampled size:',segs.shape
+	#plt.hist(segs.flatten(),bins=100);plt.show()
+
+	#log.append([i,pat,img.shape[0],img.shape[1],img.shape[2]])
+	#vox_list.append(img)
+	# indiviudal scan saving
+	npy_path = output_path+pat+out_file_note+'.npy'
+	np.save(npy_path,segs)
 	# indiviudal scan saving
 	#npz_path = output_path+pat+'.npz'
 	#np.savez_compressed(npz_path,img)
 
 
 
-print len(vox_list)
-logDF=pd.DataFrame(log,columns=['index','id','sz','sx','sy'])
-print logDF
+
+#logDF=pd.DataFrame(log,columns=['index','id','sz','sx','sy'])
+#print logDF
 #logDF.to_csv("preproc-test-set-batch-"+sys.argv[1]+"-log.csv")
-logDF.to_csv("preproc-training-set-batch-"+sys.argv[1]+"-log.csv")
+#logDF.to_csv("preproc-training-set-batch-"+sys.argv[1]+"-log.csv")
 #logDF.to_csv("preproc-log.csv")
 #npz_file = "preproc-test-set-batch-"+sys.argv[1]+".npz"
-npz_file = "preproc-training-set-res-"+str(PIXEL_SPACING)+"-batch-"+sys.argv[1]+".npz"
-print npz_file
-npz_path = output_path + npz_file
-np.savez_compressed(npz_path,vox_list)
+#npz_file = "preproc-training-set-res-"+str(PIXEL_SPACING)+"-batch-"+sys.argv[1]+".npz"
+#print npz_file
+#npz_path = output_path + npz_file
+#np.savez_compressed(npz_path,vox_list)
 
 

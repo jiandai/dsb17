@@ -19,12 +19,12 @@ ver 60170323 by jian: add prediction
 
 to-do: 
 => use segmentation in preprocessing
+
 => add dropout layer
 => multi-gpu training via tf
 *=> use joblib of py
 => add CV / model selection
 => save trained model
-
 
 '''
 

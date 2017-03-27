@@ -61,9 +61,59 @@ def get_one_scan(path,resampling=True,new_spacing=[1,1,1]):
 		voxels[s]+= numpy.int16(intercept)
 
 	voxels = numpy.array(voxels, dtype=numpy.int16) 
+	SliceThickness = get_thickness(slices)
+	print 'raw slice-thickness=',SliceThickness
+	if SliceThickness<0:
+		voxels = voxels[::-1,:,:]
+		SliceThickness = - SliceThickness
+	spacing = numpy.array([SliceThickness]+ slices[0].PixelSpacing,dtype=numpy.float32)
 	if resampling:
-		voxels = resampling_one(slices,voxels,new_spacing=new_spacing)
-	return voxels # return a 3-d numpy array
+		voxels = resampling_one(voxels,spacing,new_spacing=new_spacing)
+	return voxels, spacing # return a 3-d numpy array
+
+
+
+def get_thickness(scan):
+	S = len(scan)
+	return (-scan[0].ImagePositionPatient[2] + scan[S-1].ImagePositionPatient[2])/(S-1) # assume n>1
+
+
+
+def resampling_one(volume,spacing,new_spacing=[1,1,1]):
+	import numpy
+	# If assume SliceThickness is defined per slice
+	old_shape = volume.shape
+	reshape_factor = numpy.round(spacing/new_spacing * old_shape)/old_shape
+	new_shape = reshape_factor * old_shape
+	new_spacing = spacing / reshape_factor
+	import scipy.ndimage
+	return scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest')
+
+
+
+def normalize(image):
+	MIN_BOUND = -1000.0
+	MAX_BOUND = 400.0
+	image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
+	image[image>1] = 1.
+	image[image<0] = 0.
+	return image
+
+
+def zero_center(image):
+	PIXEL_MEAN = 0.25
+	image = image - PIXEL_MEAN
+	return image
+
+
+
+
+
+
+
+
+
+
 
 def get_all_scans(path):
 	'''
@@ -86,28 +136,6 @@ def get_all_scans(path):
 
 
 
-
-def resampling_one(scan,volume,new_spacing=[1,1,1]):
-	S = len(scan)
-	SliceThickness = (scan[0].ImagePositionPatient[2] - scan[S-1].ImagePositionPatient[2])/(S-1) # assume n>1
-
-	if SliceThickness<0:
-		# reverse the order of voxels and slices
-		volume=volume[::-1,:,:]
-		SliceThickness = - SliceThickness
-
-	import numpy
-	# If assume SliceThickness is defined per slice
-	#spacing = numpy.array([scan[0].SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
-	spacing = numpy.array([SliceThickness]+ scan[0].PixelSpacing,dtype=numpy.float32)
-	old_shape = volume.shape
-	reshape_factor = numpy.round(spacing/new_spacing * old_shape)/old_shape
-	new_shape = reshape_factor * old_shape
-	new_spacing = spacing / reshape_factor
-	import scipy.ndimage
-	return scipy.ndimage.interpolation.zoom(volume,reshape_factor,mode='nearest')
-
-
 def resampling(scans,volumes,new_spacing=[1,1,1]):
 	resampled_volumes = []
 	for p in range(len(scans)):
@@ -119,16 +147,3 @@ def resampling(scans,volumes,new_spacing=[1,1,1]):
 
 
 
-def normalize(image):
-	MIN_BOUND = -1000.0
-	MAX_BOUND = 400.0
-	image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
-	image[image>1] = 1.
-	image[image<0] = 0.
-	return image
-
-
-def zero_center(image):
-	PIXEL_MEAN = 0.25
-	image = image - PIXEL_MEAN
-	return image

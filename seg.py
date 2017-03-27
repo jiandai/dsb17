@@ -100,16 +100,19 @@ from dicom_batch import get_one_scan
 import pandas as pd
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 
-#batch_start=0
+batch_start=0 # saved
 #batch_start=100
 #batch_start=300
-batch_start=500
+#batch_start=500 # saved
+#batch_start=700 # saved
+#batch_start=1000 # saved
 #batch_start=570 # data issue /w 571-th
 
 #batch_end=100
 #batch_end=300
-#batch_end=500
-batch_end=700
+batch_end=500
+#batch_end=700
+#batch_end=1000
 #batch_end=2000
 
 patients = labels_csv.index[batch_start:batch_end]
