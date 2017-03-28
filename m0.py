@@ -16,9 +16,10 @@ ver 60170318 by jian: the training of large cnn takes much longer, review CNN ma
 ver 60170320 by jian: use 2.5 mm resolution for a test
 ver 60170322 by jian: add normalization
 ver 60170323 by jian: add prediction
+ver 60170327.1 by jian: use segmentation in preprocessing
+ver 60170327.2 by jian: simply add more epoches (switch order of normalization)
 
 to-do: 
-=> use segmentation in preprocessing
 
 => add dropout layer
 => multi-gpu training via tf
@@ -144,6 +145,7 @@ for j in range(1,41)[:S]:
 
 	for i,img in enumerate(pre_processed):
 	        print i,img.shape
+		img = normalize(img)
 	
 		if img.shape[0]>=Z_RESIZE:
 			# cut extra
@@ -178,7 +180,7 @@ for j in range(1,41)[:S]:
 				np.zeros([Z_RESIZE,X_RESIZE,Y_RESIZE- img.shape[2]-(Y_RESIZE- img.shape[2])//2], np.float16) ],axis=2)
 	
 	        #print '-',img.shape
-		train_features_b[i] = normalize(img).reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
+		train_features_b[i] = img.reshape([1, Z_RESIZE, X_RESIZE, Y_RESIZE])
 
 
 
@@ -228,12 +230,12 @@ print(nn.summary())
 
 ######################################################################################
 
-N_EPOCH=10
-#N_EPOCH=1
+N_EPOCH=100
+#N_EPOCH=2
 
 labels_csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 train_labels = labels_csv.iloc[:N,:].values
-nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoch=N_EPOCH)
+nn.fit(train_features, train_labels, batch_size=1, validation_split=0.1, nb_epoch=N_EPOCH,verbose=2)
 
 # prediction
 n = train_features.shape[0]

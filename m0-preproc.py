@@ -17,10 +17,11 @@ ver 60170327 by jian: add segmentation, read-seg-chop-resample
 import sys
 # assume len(sys.argv)>1:
 # assertion: input an integer
-BATCH_INDEX = int(sys.argv[1])
+#BATCH_INDEX = int(sys.argv[1])
+BATCH_INDEX = 10
 #BATCH_SIZE =25 # for test set /w 8 batches for 198 records
-BATCH_SIZE = 35 # for training set /w 40 batches for 1397 records
-#BATCH_SIZE =4 
+#BATCH_SIZE = 35 # for training set /w 40 batches for 1397 records
+BATCH_SIZE =2 
 batch_range = range((BATCH_INDEX-1)*BATCH_SIZE,BATCH_INDEX*BATCH_SIZE)
 batch_start = (BATCH_INDEX-1)*BATCH_SIZE
 batch_end = BATCH_INDEX*BATCH_SIZE
@@ -51,19 +52,24 @@ print batch_range
 print len(patients)
 
 from dicom_batch import get_one_scan,resampling_one
+from dicom_batch import segment_lung_mask
 from LUNA_segment_lung_ROI import segment_ROI
+from skimage import measure
 #vox_list=[]
 #log=[]
 images_path = '../input/stage1/'
 #output_path = '../process/prep-out/test/'
 output_path = '../process/prep-out/training/'
 #out_file_note = '-simple' # for test
-out_file_note = '-r-s-r' # for read-seg-resample
+#out_file_note = '-r-s-r' # for read-seg-resample
+out_file_note = '-3d-seg' # for read-seg-resample
 for i,pat in enumerate(patients):
 	print i,pat
 	#img = get_one_scan(images_path+pat,resampling=True,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
 	img,spacing = get_one_scan(images_path+pat,resampling=False)
 	print 'original size and spacing:',img.shape, spacing
+	
+	# user LUNA_segment_lung_ROI as 2d-segmenter: input img, output segs
 	seg_list=[]
 	min_row=[]
 	max_row=[]
@@ -85,6 +91,39 @@ for i,pat in enumerate(patients):
 	print 'output size:',segs.shape
 	segs = segs[:,overall_min_row:overall_max_row,overall_min_col:overall_max_col]
 	print 'chopped size:',segs.shape
+
+	# user segment_lung_mask
+	'''
+	mask = segment_lung_mask(img)
+	print 'mask size:',mask.shape
+	labels = measure.label(mask)
+	regions = measure.regionprops(labels)
+	min_depth=img.shape[0]
+	max_depth=0
+	min_row = img.shape[1]
+	max_row = 0
+	min_col = img.shape[2]
+	max_col = 0
+	for prop in regions:
+	        B = prop.bbox
+	        if min_depth > B[0]:
+	            min_depth = B[0]
+	        if min_row > B[1]:
+	            min_row = B[1]
+	        if min_col > B[2]:
+	            min_col = B[2]
+	        if max_depth < B[3]:
+	            max_depth = B[3]
+	        if max_row < B[4]:
+	            max_row = B[4]
+	        if max_col < B[5]:
+	            max_col = B[5]
+	
+	print(min_depth, max_depth, min_row, max_row, min_col, max_col)
+	print(-min_depth+max_depth, -min_row+max_row, -min_col+max_col)
+	segs = (img * mask) [min_depth:max_depth, min_row:max_row, min_col:max_col]
+	print 'chopped size:',segs.shape
+	'''
 
 	segs = resampling_one(segs,spacing,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
 	print 'resampled size:',segs.shape
