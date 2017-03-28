@@ -11,7 +11,8 @@ ver 60170314.1 by jian: test save individual npz /w test set
 ver 60170314.2 by jian: test save batch by using LSF array /w test set
 ver 60170314.2 by jian: save batch by using LSF array /w tr set
 ver 60170320 by jian: allow diff pixel spacing when resampling
-ver 60170327 by jian: add segmentation, read-seg-chop-resample
+ver 60170327.1 by jian: add segmentation, read-seg-chop-resample
+ver 60170327.2 by jian: folk from m0-preproc.py
 
 '''
 import sys
