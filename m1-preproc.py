@@ -12,7 +12,7 @@ ver 60170314.2 by jian: test save batch by using LSF array /w test set
 ver 60170314.2 by jian: save batch by using LSF array /w tr set
 ver 60170320 by jian: allow diff pixel spacing when resampling
 ver 60170327.1 by jian: add segmentation, read-seg-chop-resample
-ver 60170327.2 by jian: folk from m0-preproc.py
+ver 60170327.2 by jian: folk from m0-preproc.py /w 1mm and 1.5mm
 
 '''
 import sys
@@ -27,7 +27,8 @@ batch_range = range((BATCH_INDEX-1)*BATCH_SIZE,BATCH_INDEX*BATCH_SIZE)
 batch_start = (BATCH_INDEX-1)*BATCH_SIZE
 batch_end = BATCH_INDEX*BATCH_SIZE
 
-PIXEL_SPACING=1
+#PIXEL_SPACING=1
+PIXEL_SPACING=1.5
 #PIXEL_SPACING=2.5
 #PIXEL_SPACING=1.5
 
@@ -62,8 +63,9 @@ images_path = '../input/stage1/'
 #output_path = '../process/prep-out/test/'
 output_path = '../process/prep-out/training/'
 #out_file_note = '-simple' # for test
-out_file_note = '-r-s-r' # for read-seg-resample
-#out_file_note = '-3d-seg' # for read-seg-resample
+#out_file_note = '-r-s-r' # for read-seg-resample
+#out_file_note = '-3d-seg' # for read-seg-resample /w 1mm default
+out_file_note = '-3d-seg-1.5mm' # for read-seg-resample
 for i,pat in enumerate(patients):
 	print i,pat
 	#img = get_one_scan(images_path+pat,resampling=True,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
@@ -71,6 +73,7 @@ for i,pat in enumerate(patients):
 	print 'original size and spacing:',img.shape, spacing
 	
 	# user LUNA_segment_lung_ROI as 2d-segmenter: input img, output segs
+	'''
 	seg_list=[]
 	min_row=[]
 	max_row=[]
@@ -92,9 +95,9 @@ for i,pat in enumerate(patients):
 	print 'output size:',segs.shape
 	segs = segs[:,overall_min_row:overall_max_row,overall_min_col:overall_max_col]
 	print 'chopped size:',segs.shape
+	'''
 
 	# user segment_lung_mask
-	'''
 	mask = segment_lung_mask(img)
 	print 'mask size:',mask.shape
 	labels = measure.label(mask)
@@ -124,7 +127,6 @@ for i,pat in enumerate(patients):
 	print(-min_depth+max_depth, -min_row+max_row, -min_col+max_col)
 	segs = (img * mask) [min_depth:max_depth, min_row:max_row, min_col:max_col]
 	print 'chopped size:',segs.shape
-	'''
 
 	segs = resampling_one(segs,spacing,new_spacing=[PIXEL_SPACING,PIXEL_SPACING,PIXEL_SPACING])
 	print 'resampled size:',segs.shape
