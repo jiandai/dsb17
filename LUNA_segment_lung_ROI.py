@@ -14,11 +14,13 @@ ver 20170324.2 by jian: spin off from the folk, and turn to a function / merge s
 ver 20170325 by jian: tune on whether to make the output a square and to resize to 512^2
 ver 20170327.1 by jian: away from 512, test on "img[mask>0].shape[0]>0"
 ver 20170327.2 by jian: output img in original size together with the box coordinates, mark the normalization
+ver 20170331 by jian: prepare to use unet trained by full LUNA data 
 
 to-do: 
 '''
 
 def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True):
+	# Assume float64 for img
 	from skimage import morphology
 	from skimage import measure
 	from skimage.transform import resize
@@ -39,12 +41,15 @@ def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True
 	#middle = img[100:400,100:400] 
 	middle = img[res_x*r:res_x*(1-r),res_y*r:res_y*(1-r)] 
 	mean = np.mean(middle)  
-	#max = np.max(img)
-	#min = np.min(img)
+
 	# To improve threshold finding, I'm moving the 
 	# underflow and overflow on the pixel spectrum
-	#img[img==max]=mean
-	#img[img==min]=mean
+	if normalize:
+		max = np.max(img)
+		min = np.min(img)
+		img[img==max]=mean
+		img[img==min]=mean
+
 	#
 	# Using Kmeans to separate foreground (radio-opaque tissue)
 	# and background (radio transparent tissue ie lungs)

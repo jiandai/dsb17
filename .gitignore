@@ -19,3 +19,5 @@ __pycache__
 __pycache__/*
 test.py
 tst.py
+test/
+test/*
