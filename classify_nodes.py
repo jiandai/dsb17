@@ -136,15 +136,18 @@ def classifyData(X,Y):
     from sklearn.ensemble import RandomForestClassifier as RF
     import xgboost as xgb
 
+    print ("Random Forest")
     kf = KFold(Y, n_folds=3)
     y_pred = Y * 0
     for train, test in kf:
         X_train, X_test, y_train, y_test = X[train,:], X[test,:], Y[train], Y[test]
-        clf = RF(n_estimators=100, n_jobs=3)
-        clf.fit(X_train, y_train)
-        y_pred[test] = clf.predict(X_test)
+        rf = RF(n_estimators=100, n_jobs=3)
+        rf.fit(X_train, y_train)
+        y_pred[test] = rf.predict(X_test)
+        y_pred_prob = rf.predict_proba(X_test)
     print classification_report(Y, y_pred, target_names=["No Cancer", "Cancer"])
-    print("logloss",logloss(Y, y_pred))
+    y_pred_prob = rf.predict_proba(X)
+    print("logloss",logloss(Y, y_pred_prob[:,1]))
 
     # All Cancer
     print "Predicting all positive"
@@ -164,11 +167,14 @@ def classifyData(X,Y):
     y_pred = Y * 0
     for train, test in kf:
         X_train, X_test, y_train, y_test = X[train,:], X[test,:], Y[train], Y[test]
-        clf = xgb.XGBClassifier(objective="binary:logistic")
-        clf.fit(X_train, y_train)
-        y_pred[test] = clf.predict(X_test)
+        xg = xgb.XGBClassifier(objective="binary:logistic")
+        xg.fit(X_train, y_train)
+        y_pred[test] = xg.predict(X_test)
+        y_pred_prob=xg.predict_proba(X_test)
     print classification_report(Y, y_pred, target_names=["No Cancer", "Cancer"])
-    print("logloss",logloss(Y, y_pred))
+    y_pred_prob = xg.predict_proba(X)
+    print("logloss",logloss(Y, y_pred_prob[:,1]))
+    return rf,xg
 
 if __name__ == "__main__":
     from sys import argv  

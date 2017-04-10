@@ -15,11 +15,12 @@ ver 20170325 by jian: tune on whether to make the output a square and to resize 
 ver 20170327.1 by jian: away from 512, test on "img[mask>0].shape[0]>0"
 ver 20170327.2 by jian: output img in original size together with the box coordinates, mark the normalization
 ver 20170331 by jian: prepare to use unet trained by full LUNA data 
+ver 20170405 by jian: change default in segment_ROI to be consistent /w ../DSB3Tutorial/tutorial_code/LUNA_segment_lung_ROI.py
 
 to-do: 
 '''
 
-def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True):
+def segment_ROI(img,normalize=True,keep_size=True,to_square=True,resizing=True):
 	# Assume float64 for img
 	from skimage import morphology
 	from skimage import measure
@@ -27,7 +28,8 @@ def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True
 	from sklearn.cluster import KMeans
 	import numpy as np
 	
-	res_x,res_y = img.shape[0],img.shape[1]
+	#res_x,res_y = img.shape[0],img.shape[1]
+	res_x,res_y = 512,512
 
 	#Standardize the pixel values
 	if normalize:
@@ -37,9 +39,10 @@ def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True
 		img = img/std
 	# Find the average pixel value near the lungs
 	# to renormalize washed out images
-	r=100/512
-	#middle = img[100:400,100:400] 
-	middle = img[res_x*r:res_x*(1-r),res_y*r:res_y*(1-r)] 
+	#r1=100/512
+	#r2=400/512
+	middle = img[100:400,100:400] 
+	#middle = img[res_x*r1:res_x*r2,res_y*r1:res_y*r2] 
 	mean = np.mean(middle)  
 
 	# To improve threshold finding, I'm moving the 
@@ -85,7 +88,7 @@ def segment_ROI(img,normalize=False,keep_size=False,to_square=True,resizing=True
 	good_labels = []
 	for prop in regions:
 		B = prop.bbox
-		if B[2]-B[0]<res_x*475/512 and B[3]-B[1]<res_y*475/512 and B[0]>res_x*40/512 and B[2]<res_x*472/512:
+		if B[2]-B[0]<475 and B[3]-B[1]<475 and B[0]>40 and B[2]<472:
 			good_labels.append(prop.label)
 	mask = np.ndarray([res_x,res_y],dtype=np.int8)
 	mask[:] = 0
