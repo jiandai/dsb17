@@ -30,7 +30,7 @@ if batch_number in range(1,3):
 	batch_end=(batch_number-0)*batch_size
 	csv = pd.read_csv('../input/stage1_sample_submission.csv', index_col='id')
 	#feature_file = 'test_features.npy'
-	feature_file = 'test_features-v2-b'+str(batch_number-2)+'.npy'
+	feature_file = 'test_features-v4-b'+str(batch_number-0)+'.npy'
 
 elif batch_number in range(3,8):
 	output_path = '../process/stage2/'
@@ -38,7 +38,7 @@ elif batch_number in range(3,8):
 	batch_end=(batch_number-2)*batch_size
 	csv = pd.read_csv('../input/stage2_sample_submission.csv', index_col='id')
 	#feature_file = 'stage2_features.npy'
-	feature_file = 'stage2_features-v2-b'+str(batch_number-7)+'.npy'
+	feature_file = 'stage2_features-v4-b'+str(batch_number-2)+'.npy'
 
 elif batch_number in range(8,22):
 	output_path = '../process/tr-in/'
@@ -46,7 +46,7 @@ elif batch_number in range(8,22):
 	batch_end=(batch_number-7)*batch_size
 	csv = pd.read_csv('../input/stage1_labels.csv', index_col='id')
 	#feature_file = 'training_features.npy'
-	feature_file = 'training_features-v2-b'+str(batch_number)+'.npy'
+	feature_file = 'training_features-v4-b'+str(batch_number-7)+'.npy'
 
 
 print batch_start,'--',batch_end
@@ -67,8 +67,11 @@ img_cols = 512
 #smooth = 1.
 smooth = 0.
 
-#h5file='unet-v5.hdf5'
-h5file='unet-v4-861663.hdf5'
+#h5file='unet-v5.hdf5' # .. for 1st sub
+#h5file='unet-v4-861663.hdf5' # => v2 output for 2nd sub
+#h5file='unet-v4.hdf5' # => v3 output for 3rd sub
+h5file='unet-v4-895189.hdf5' # => v4 output for the 4th
+
 from LUNA_train_unet import dice_coef,dice_coef_np,dice_coef_loss,get_unet
 model = get_unet()
 model.load_weights('../DSB3Tutorial/tutorial_code/'+h5file) # hopefully the best shoot
